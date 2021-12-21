@@ -1,13 +1,12 @@
 package main
 
 import (
-	"context"
 	"flag"
-	"fmt"
 	"log"
 	"os"
 
 	"hntr/db"
+	"hntr/web"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -29,18 +28,25 @@ func main() {
 		dbName   = fs.String("postgres-db", "", "postgres dbname")
 		dbUser   = fs.String("postgres-user", "", "postgres user")
 		dbPass   = fs.String("postgres-pass", "", "postgres password")
+		bind     = fs.String("bind", ":8080", "bind to [ip]:port")
 	)
 
 	// allow configuration to come from environment (which is loaded via .env file)
 	ff.Parse(fs, os.Args[1:], ff.WithEnvVarNoPrefix())
 
 	// setup repository for db access
-	repo, err := db.SetupRepository(*dbServer, *dbName, *dbUser, *dbPass)
+	repo, dbc, err := db.SetupRepository(*dbServer, *dbName, *dbUser, *dbPass)
+	defer dbc.Close()
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	ctx := context.Background()
-	fmt.Println(repo.ListBoxes(ctx))
+	// setup server
+	server := web.NewServer(*bind, repo)
+
+	// start webserver
+	if err := server.Start(); err != nil {
+		log.Fatal(err)
+	}
 }

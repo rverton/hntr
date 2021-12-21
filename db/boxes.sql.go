@@ -8,7 +8,7 @@ import (
 )
 
 const listBoxes = `-- name: ListBoxes :many
-SELECT id, name FROM boxes
+SELECT id, name, created_at FROM boxes
 `
 
 func (q *Queries) ListBoxes(ctx context.Context) ([]Box, error) {
@@ -20,7 +20,7 @@ func (q *Queries) ListBoxes(ctx context.Context) ([]Box, error) {
 	var items []Box
 	for rows.Next() {
 		var i Box
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
