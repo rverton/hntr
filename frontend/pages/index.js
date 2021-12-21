@@ -9,7 +9,7 @@ export default function Home() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
 
-            <div class="text-blue-500 text-xl">Tailwind CSS</div>
+            <div className="text-blue-500 text-xl">Tailwind CSS</div>
 
         </div>
     )

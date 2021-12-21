@@ -28,7 +28,7 @@ db-reset:
 	migrate -verbose -path ./migrations/ -database ${postgres} up
 
 frontend:
-	cd ./frontend/ && npm run build
+	cd ./frontend/ && npx next export
 
 test:
 	go test ./...

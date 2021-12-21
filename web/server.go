@@ -2,9 +2,14 @@ package web
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"hntr/db"
+	"hntr/frontend"
+	"io/fs"
 	"net"
+	"net/http"
+	"os"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -21,6 +26,7 @@ type Server struct {
 }
 
 func NewServer(addr string, repo *db.Queries) *Server {
+	debugMode := os.Getenv("DEBUG") != ""
 
 	server := &Server{
 		addr: addr,
@@ -30,13 +36,18 @@ func NewServer(addr string, repo *db.Queries) *Server {
 	e.HideBanner = true
 
 	// Middleware
-	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+	e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
+		Format: "${method} ${uri} => ${status}\n",
+	}))
 
 	server.server = e
 	server.repo = repo
 
-	e.GET("/", server.Index)
+	// e.GET("/", server.Index)
+
+	assetHandler := http.FileServer(getFileSystem(frontend.Files, debugMode, e.Logger))
+	e.GET("/*", echo.WrapHandler(assetHandler))
 
 	return server
 }
@@ -80,4 +91,19 @@ func (s *Server) URL() string {
 // Server returns the current echo instance, mainly used for testing
 func (s *Server) Server() *echo.Echo {
 	return s.server
+}
+
+func getFileSystem(embededFiles embed.FS, useOS bool, logger echo.Logger) http.FileSystem {
+	if useOS {
+		logger.Info("using assets from filesystem")
+		return http.FS(os.DirFS("out"))
+	}
+
+	logger.Info("using assets embedded in binary")
+	fsys, err := fs.Sub(embededFiles, "out")
+	if err != nil {
+		panic(err)
+	}
+
+	return http.FS(fsys)
 }
