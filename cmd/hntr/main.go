@@ -13,7 +13,14 @@ import (
 	"github.com/peterbourgon/ff/v3"
 )
 
+// build version, injected during build.
+var (
+	commitHash string
+	commitDate string
+)
+
 func main() {
+	log.Printf("commit=%v, commitDate=%v\n", commitHash, commitDate)
 
 	// load all settings from .env file
 	err := godotenv.Load()

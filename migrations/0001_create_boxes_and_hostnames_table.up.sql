@@ -14,6 +14,8 @@ CREATE TABLE hostnames (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
 
+    UNIQUE(hostname, box_id),
+
     CONSTRAINT fk_box
       FOREIGN KEY(box_id) 
 	    REFERENCES boxes(id)
