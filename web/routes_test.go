@@ -21,20 +21,20 @@ func decode(body *bytes.Buffer) interface{} {
 	return data
 }
 
-func TestIndex(t *testing.T) {
+func TestCreate(t *testing.T) {
 	assert := assert.New(t)
 
 	server, _, dbc := MustSetupTest(t)
 	defer MustCloseTest(t, dbc)
 
-	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req := httptest.NewRequest(http.MethodPost, "/api/box/create", nil)
 	rec := httptest.NewRecorder()
 	server.ServeHTTP(rec, req)
 
-	var data []db.Box
+	var data db.Box
 	err := json.Unmarshal(rec.Body.Bytes(), &data)
 	assert.Nil(err)
 
 	assert.Equal(http.StatusOK, rec.Code)
-	assert.Len(data, 0)
+	assert.Equal("Unnamed Box", data.Name)
 }

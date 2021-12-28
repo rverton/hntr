@@ -5,7 +5,31 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
+
+const createBox = `-- name: CreateBox :one
+INSERT INTO boxes (name) VALUES ($1) RETURNING id, name, created_at
+`
+
+func (q *Queries) CreateBox(ctx context.Context, name string) (Box, error) {
+	row := q.db.QueryRowContext(ctx, createBox, name)
+	var i Box
+	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	return i, err
+}
+
+const getBox = `-- name: GetBox :one
+SELECT id, name, created_at FROM boxes WHERE id = $1
+`
+
+func (q *Queries) GetBox(ctx context.Context, id uuid.UUID) (Box, error) {
+	row := q.db.QueryRowContext(ctx, getBox, id)
+	var i Box
+	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	return i, err
+}
 
 const listBoxes = `-- name: ListBoxes :many
 SELECT id, name, created_at FROM boxes
@@ -17,7 +41,7 @@ func (q *Queries) ListBoxes(ctx context.Context) ([]Box, error) {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Box
+	items := []Box{}
 	for rows.Next() {
 		var i Box
 		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {

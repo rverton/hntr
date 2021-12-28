@@ -11,6 +11,9 @@ CREATE TABLE hostnames (
     id uuid DEFAULT uuid_generate_v4 (),
     hostname VARCHAR NOT NULL,
     box_id  uuid NOT NULL,
+    tags text[],
+    source text NOT NULL default '',
+
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
 

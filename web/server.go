@@ -44,7 +44,12 @@ func NewServer(addr string, repo *db.Queries) *Server {
 	server.server = e
 	server.repo = repo
 
-	// e.GET("/", server.Index)
+	e.POST("/api/box/create", server.CreateBox)
+
+	// domains
+	e.GET("/api/box/:id", server.GetBox)
+	e.GET("/api/box/:id/domains", server.ListHostnames)
+	e.POST("/api/box/:id/domains", server.AddHostnames)
 
 	assetHandler := http.FileServer(getFileSystem(frontend.Files, debugMode, e.Logger))
 	e.GET("/*", echo.WrapHandler(assetHandler))

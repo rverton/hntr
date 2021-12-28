@@ -23,12 +23,15 @@ watch:
 	ulimit -n 1000 #increase the file watch limit, might required on MacOS
 	reflex -R '^frontend/' -s -r '\.go$$' make run
 
+watch-frontend:
+	cd ./frontend/ && npm run dev
+
 db-reset:
 	migrate -verbose -path ./migrations/ -database ${postgres} drop
 	migrate -verbose -path ./migrations/ -database ${postgres} up
 
 frontend:
-	cd ./frontend/ && npx next export
+	cd ./frontend/ && npx next build && npx next export
 
 test:
 	go test ./...
