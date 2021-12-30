@@ -53,6 +53,7 @@ func NewServer(addr string, repo *db.Queries) *Server {
 
 	// automations
 	e.GET("/api/box/:id/automations", server.ListAutomations)
+	e.POST("/api/automations/:id/start", server.StartAutomation)
 
 	assetHandler := http.FileServer(getFileSystem(frontend.Files, debugMode, e.Logger))
 	e.GET("/*", echo.WrapHandler(assetHandler))

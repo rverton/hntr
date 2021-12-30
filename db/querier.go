@@ -11,6 +11,7 @@ import (
 type Querier interface {
 	CreateBox(ctx context.Context, name string) (Box, error)
 	CreateHostname(ctx context.Context, arg CreateHostnameParams) error
+	GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error)
 	GetBox(ctx context.Context, id uuid.UUID) (Box, error)
 	ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Automation, error)
 	ListBoxes(ctx context.Context) ([]Box, error)

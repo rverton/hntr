@@ -10,6 +10,27 @@ import (
 	"github.com/lib/pq"
 )
 
+const getAutomation = `-- name: GetAutomation :one
+SELECT id, name, box_id, command, source_table, source_tags, destination_table, destination_tags, created_at FROM automations WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error) {
+	row := q.db.QueryRowContext(ctx, getAutomation, id)
+	var i Automation
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.BoxID,
+		&i.Command,
+		&i.SourceTable,
+		pq.Array(&i.SourceTags),
+		&i.DestinationTable,
+		pq.Array(&i.DestinationTags),
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const listAutomations = `-- name: ListAutomations :many
 SELECT id, name, box_id, command, source_table, source_tags, destination_table, destination_tags, created_at FROM automations WHERE box_id = $1
 `

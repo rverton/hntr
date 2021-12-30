@@ -98,6 +98,28 @@ func (s *Server) ListAutomations(c echo.Context) error {
 	return c.JSON(http.StatusOK, automations)
 }
 
+func (s *Server) StartAutomation(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		log.Printf("unable to parse id: %v", err)
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	automation, err := s.repo.GetAutomation(ctx, id)
+	if err == sql.ErrNoRows {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	if err != nil {
+		log.Printf("getting automation failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusOK, automation)
+}
+
 func (s *Server) CreateBox(c echo.Context) error {
 	ctx := context.Background()
 
