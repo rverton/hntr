@@ -1,12 +1,16 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { formatDistanceToNow, parseISO } from 'date-fns'
+import useEventListener from '@use-it/event-listener'
 
 import { Fragment, useRef, useState, useMemo } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 
 import Layout from '../../components/layout'
+import Tag from '../../components/tagBadge'
 import useDomains from '../../hooks/useDomains'
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
 export default function Home() {
   const router = useRouter()
@@ -14,19 +18,31 @@ export default function Home() {
 
   const [showModal, setShowModal] = useState(false)
   const [filterInput, setFilterInput] = useState("")
+  const [selected, setSelected] = useState({})
   const [filter, setFilter] = useState("")
   const cancelButtonRef = useRef(null)
   const { domains, isLoading, isError } = useDomains(id, filter)
 
-  const tableMemo = useMemo(() => <DomainsTable data={domains} isLoading={isLoading} />, [domains, isLoading]);
+  const tableMemo = useMemo(() => {
+    return <DomainsTable
+      data={domains}
+      isLoading={isLoading}
+      selected={selected}
+      setSelected={setSelected}
+    />;
+  }, [domains, isLoading, selected])
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL
+  function handler({ key }) {
+    console.log({ key })
+  }
 
   function handleSubmit(e) {
     if (e.key == 'Enter') {
       setFilter(filterInput)
     }
   }
+
+  useEventListener('keydown', handler);
 
   return (
     <>
@@ -45,14 +61,17 @@ export default function Home() {
                 type="text"
                 name="filter"
                 id="filter"
-                className="shadow-sm focus:ring-gray-500 focus:border-gray-500 block w-2/3 text-xs border-gray-300 rounded-md"
+                className="shadow-sm focus:ring-gray-500 focus:border-gray-500 block w-7/12 text-xs border-gray-300 rounded-md"
                 placeholder="foo.com tag:is_scope"
                 autoComplete=""
                 value={filterInput}
                 onChange={(e) => setFilterInput(e.target.value)}
                 onKeyDown={handleSubmit}
               />
-              {domains && <div className="w-1/3 ml-4 text-sm">{domains.length} hosts</div>}
+              {domains && <div className="w-5/12 pl-4 text-sm">
+                {domains.length} hosts
+                {Object.keys(selected).length > 0 && <span>, {Object.keys(selected).length} selected</span>}
+              </div>}
               {isLoading && <div className="w-1/3 ml-4 text-sm">Loading</div>}
             </div>
             <button onClick={() => setShowModal(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 uppercase tracking-widest text-xs font-semibold border border-transparent shadow-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto">
@@ -61,7 +80,7 @@ export default function Home() {
           </div>
         </div>
 
-        {isError && <div class="text-red-500">Error loading domains.</div>}
+        {isError && <div className="text-red-500">Error loading domains.</div>}
         {!isError && tableMemo}
 
       </Layout>
@@ -106,7 +125,7 @@ export default function Home() {
                       </p>
 
                       <div className="font-mono border p-5 text-sm my-3">
-                        <span className="text-gray-400">cat domains.txt | </span><span id="curl">curl --data-binary @- "{apiUrl}/box/{id}/domains"</span>
+                        <span className="text-gray-400">cat domains.txt | </span><span id="curl">curl --data-binary @- &quot;{apiUrl}/box/{id}/domains&quot;</span>
                       </div>
 
                       <p className="text-sm text-gray-500">
@@ -114,7 +133,7 @@ export default function Home() {
                       </p>
 
                       <div className="font-mono border p-5 text-sm my-3">
-                        <span className="text-gray-400">echo example.com | </span>curl --data-binary @- "{apiUrl}/box/{id}/domains?tags=is_scope"
+                        <span className="text-gray-400">echo example.com | </span>curl --data-binary @- &quot;{apiUrl}/box/{id}/domains?tags=is_scope&quot;
                       </div>
                     </div>
                   </div>
@@ -138,7 +157,19 @@ export default function Home() {
   )
 }
 
-function DomainsTable({ data }) {
+function DomainsTable({ data, selected, setSelected }) {
+  const toggleRowSelection = (guid) => {
+    let copy = Object.assign({}, selected)
+
+    if (guid in selected) {
+      delete copy[guid]
+    } else {
+      copy[guid] = 1
+    }
+
+    setSelected(copy)
+  }
+
   return (
     <>
       <table className="mt-8 w-full table-fixed mb-8">
@@ -162,16 +193,18 @@ function DomainsTable({ data }) {
         {data?.length > 0 &&
           <tbody>
             {data.map(hostname =>
-              <tr key={hostname.hostname}>
+              <tr
+                key={hostname.hostname}
+                onClick={() => toggleRowSelection(hostname.id)}
+                className={hostname.id in selected ? 'bg-green-100' : ''}
+              >
                 <td
                   className="text-sm px-2 py-1 border-b border-gray-200 border-dashed"
-                // onClick={() => { navigator.clipboard.writeText(hostname.hostname) }}
-                >{hostname.hostname}</td>
+                >{hostname.hostname}
+                </td>
                 <td className="flex space-x-1 text-sm px-2 py-1 border-b border-gray-200 border-dashed">
                   {hostname.tags?.map((tag, i) =>
-                    <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                      {tag}
-                    </span>
+                    <Tag key={i} name={tag} />
                   )}
                   &nbsp;
                 </td>

@@ -8,6 +8,18 @@ import (
 	"github.com/google/uuid"
 )
 
+type Automation struct {
+	ID               uuid.UUID `json:"id"`
+	Name             string    `json:"name"`
+	BoxID            uuid.UUID `json:"box_id"`
+	Command          string    `json:"command"`
+	SourceTable      string    `json:"source_table"`
+	SourceTags       []string  `json:"source_tags"`
+	DestinationTable string    `json:"destination_table"`
+	DestinationTags  []string  `json:"destination_tags"`
+	CreatedAt        time.Time `json:"created_at"`
+}
+
 type Box struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
@@ -15,7 +27,7 @@ type Box struct {
 }
 
 type Hostname struct {
-	ID        uuid.UUID `json:"id"`
+	ID        int32     `json:"id"`
 	Hostname  string    `json:"hostname"`
 	BoxID     uuid.UUID `json:"box_id"`
 	Tags      []string  `json:"tags"`

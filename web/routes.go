@@ -23,6 +23,11 @@ func (s *Server) GetBox(c echo.Context) error {
 	}
 
 	box, err := s.repo.GetBox(ctx, id)
+
+	if err == sql.ErrNoRows {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
 	if err != nil {
 		log.Printf("getting box failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, box)
@@ -66,8 +71,6 @@ func (s *Server) ListHostnames(c echo.Context) error {
 		Column3:  tags,
 	}
 
-	log.Printf("%+v", params)
-
 	hostnames, err := s.repo.ListHostnamesByBoxFilter(ctx, params)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("listing boxes failed: %v", err)
@@ -75,6 +78,24 @@ func (s *Server) ListHostnames(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, hostnames)
+}
+
+func (s *Server) ListAutomations(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		log.Printf("unable to parse id: %v", err)
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	automations, err := s.repo.ListAutomations(ctx, id)
+	if err != nil && err != sql.ErrNoRows {
+		log.Printf("listing automations failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusOK, automations)
 }
 
 func (s *Server) CreateBox(c echo.Context) error {

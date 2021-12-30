@@ -1,23 +1,19 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE boxes (
+CREATE TABLE automations (
     id uuid DEFAULT uuid_generate_v4 (),
     name VARCHAR NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE hostnames (
-    id serial,
-    hostname VARCHAR NOT NULL,
     box_id  uuid NOT NULL,
-    tags text[],
-    source text NOT NULL default '',
+    command text NOT NULL,
+
+    source_table text NOT NULL,
+    source_tags text[],
+
+    destination_table text NOT NULL,
+    destination_tags text[],
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     PRIMARY KEY (id),
-
-    UNIQUE(hostname, box_id),
 
     CONSTRAINT fk_box
       FOREIGN KEY(box_id) 

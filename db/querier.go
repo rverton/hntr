@@ -12,6 +12,7 @@ type Querier interface {
 	CreateBox(ctx context.Context, name string) (Box, error)
 	CreateHostname(ctx context.Context, arg CreateHostnameParams) error
 	GetBox(ctx context.Context, id uuid.UUID) (Box, error)
+	ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Automation, error)
 	ListBoxes(ctx context.Context) ([]Box, error)
 	ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Hostname, error)
 	ListHostnamesByBoxFilter(ctx context.Context, arg ListHostnamesByBoxFilterParams) ([]Hostname, error)
