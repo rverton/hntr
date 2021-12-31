@@ -4,10 +4,10 @@ package db
 
 import (
 	"database/sql"
-	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgtype"
 )
 
 type Automation struct {
@@ -30,16 +30,16 @@ type Box struct {
 
 // 1
 type GueJob struct {
-	JobID      int64           `json:"job_id"`
-	Priority   int16           `json:"priority"`
-	RunAt      time.Time       `json:"run_at"`
-	JobType    string          `json:"job_type"`
-	Args       json.RawMessage `json:"args"`
-	ErrorCount int32           `json:"error_count"`
-	LastError  sql.NullString  `json:"last_error"`
-	Queue      string          `json:"queue"`
-	CreatedAt  time.Time       `json:"created_at"`
-	UpdatedAt  time.Time       `json:"updated_at"`
+	JobID      int64          `json:"job_id"`
+	Priority   int16          `json:"priority"`
+	RunAt      time.Time      `json:"run_at"`
+	JobType    string         `json:"job_type"`
+	Args       pgtype.JSON    `json:"args"`
+	ErrorCount int32          `json:"error_count"`
+	LastError  sql.NullString `json:"last_error"`
+	Queue      string         `json:"queue"`
+	CreatedAt  time.Time      `json:"created_at"`
+	UpdatedAt  time.Time      `json:"updated_at"`
 }
 
 type Hostname struct {

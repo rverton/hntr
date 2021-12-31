@@ -7,7 +7,6 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 const getAutomation = `-- name: GetAutomation :one
@@ -15,7 +14,7 @@ SELECT id, name, box_id, command, source_table, source_tags, destination_table, 
 `
 
 func (q *Queries) GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error) {
-	row := q.db.QueryRowContext(ctx, getAutomation, id)
+	row := q.db.QueryRow(ctx, getAutomation, id)
 	var i Automation
 	err := row.Scan(
 		&i.ID,
@@ -23,9 +22,9 @@ func (q *Queries) GetAutomation(ctx context.Context, id uuid.UUID) (Automation, 
 		&i.BoxID,
 		&i.Command,
 		&i.SourceTable,
-		pq.Array(&i.SourceTags),
+		&i.SourceTags,
 		&i.DestinationTable,
-		pq.Array(&i.DestinationTags),
+		&i.DestinationTags,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -36,7 +35,7 @@ SELECT id, name, box_id, command, source_table, source_tags, destination_table, 
 `
 
 func (q *Queries) ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Automation, error) {
-	rows, err := q.db.QueryContext(ctx, listAutomations, boxID)
+	rows, err := q.db.Query(ctx, listAutomations, boxID)
 	if err != nil {
 		return nil, err
 	}
@@ -50,17 +49,14 @@ func (q *Queries) ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Autom
 			&i.BoxID,
 			&i.Command,
 			&i.SourceTable,
-			pq.Array(&i.SourceTags),
+			&i.SourceTags,
 			&i.DestinationTable,
-			pq.Array(&i.DestinationTags),
+			&i.DestinationTags,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

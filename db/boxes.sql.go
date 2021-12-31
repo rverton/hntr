@@ -14,7 +14,7 @@ INSERT INTO boxes (name) VALUES ($1) RETURNING id, name, created_at
 `
 
 func (q *Queries) CreateBox(ctx context.Context, name string) (Box, error) {
-	row := q.db.QueryRowContext(ctx, createBox, name)
+	row := q.db.QueryRow(ctx, createBox, name)
 	var i Box
 	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
 	return i, err
@@ -25,7 +25,7 @@ SELECT id, name, created_at FROM boxes WHERE id = $1
 `
 
 func (q *Queries) GetBox(ctx context.Context, id uuid.UUID) (Box, error) {
-	row := q.db.QueryRowContext(ctx, getBox, id)
+	row := q.db.QueryRow(ctx, getBox, id)
 	var i Box
 	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
 	return i, err
@@ -36,7 +36,7 @@ SELECT id, name, created_at FROM boxes
 `
 
 func (q *Queries) ListBoxes(ctx context.Context) ([]Box, error) {
-	rows, err := q.db.QueryContext(ctx, listBoxes)
+	rows, err := q.db.Query(ctx, listBoxes)
 	if err != nil {
 		return nil, err
 	}
@@ -48,9 +48,6 @@ func (q *Queries) ListBoxes(ctx context.Context) ([]Box, error) {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

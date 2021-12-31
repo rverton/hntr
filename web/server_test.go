@@ -3,12 +3,14 @@ package web
 import (
 	"database/sql"
 	"hntr/db"
+	"hntr/jobs"
 	"os"
 	"testing"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/database/pgx"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -21,16 +23,11 @@ func init() {
 	}
 }
 
-func MustSetupTest(tb testing.TB) (*echo.Echo, *db.Queries, *sql.DB) {
+func MustSetupTest(tb testing.TB) (*echo.Echo, *db.Queries, *pgxpool.Pool) {
 	tb.Helper()
 
 	// setup repository for test db access
-	repo, dbc, err := db.SetupRepository(
-		os.Getenv("POSTGRES_TEST_HOST"),
-		os.Getenv("POSTGRES_TEST_DB"),
-		os.Getenv("POSTGRES_TEST_USER"),
-		os.Getenv("POSTGRES_TEST_PASS"),
-	)
+	dbc, err := sql.Open("pgx", os.Getenv("POSTGRES_TEST_URL"))
 	if err != nil {
 		panic(err)
 	}
@@ -49,7 +46,7 @@ func MustSetupTest(tb testing.TB) (*echo.Echo, *db.Queries, *sql.DB) {
 		panic(err)
 	}
 
-	driver, err := postgres.WithInstance(dbc, &postgres.Config{})
+	driver, err := pgx.WithInstance(dbc, &pgx.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -67,13 +64,20 @@ func MustSetupTest(tb testing.TB) (*echo.Echo, *db.Queries, *sql.DB) {
 		panic(err)
 	}
 
-	// setup web server
-	server := NewServer(":0", repo).Server()
+	repo, repoDbc, err := db.SetupRepository(os.Getenv("POSTGRES_TEST_URL"), true)
+	defer dbc.Close()
 
-	return server, repo, dbc
+	// setup queue
+	gc, shutdownQueue := jobs.Init(os.Getenv("POSTGRES_TEST_URL"), repo)
+	defer shutdownQueue()
+
+	// setup web server
+	server := NewServer(":0", repo, gc).Server()
+
+	return server, repo, repoDbc
 }
 
-func MustCloseTest(tb testing.TB, db *sql.DB) {
+func MustCloseTest(tb testing.TB, db *pgxpool.Pool) {
 	tb.Helper()
 
 	db.Close()

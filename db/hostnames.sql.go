@@ -7,7 +7,6 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/lib/pq"
 )
 
 const countHostnamesByBoxFilter = `-- name: CountHostnamesByBoxFilter :one
@@ -21,7 +20,7 @@ type CountHostnamesByBoxFilterParams struct {
 }
 
 func (q *Queries) CountHostnamesByBoxFilter(ctx context.Context, arg CountHostnamesByBoxFilterParams) (int64, error) {
-	row := q.db.QueryRowContext(ctx, countHostnamesByBoxFilter, arg.BoxID, arg.Hostname, pq.Array(arg.Column3))
+	row := q.db.QueryRow(ctx, countHostnamesByBoxFilter, arg.BoxID, arg.Hostname, arg.Column3)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -39,9 +38,9 @@ type CreateHostnameParams struct {
 }
 
 func (q *Queries) CreateHostname(ctx context.Context, arg CreateHostnameParams) error {
-	_, err := q.db.ExecContext(ctx, createHostname,
+	_, err := q.db.Exec(ctx, createHostname,
 		arg.Hostname,
-		pq.Array(arg.Tags),
+		arg.Tags,
 		arg.BoxID,
 		arg.Source,
 	)
@@ -53,7 +52,7 @@ SELECT id, hostname, box_id, tags, source, created_at from hostnames WHERE box_i
 `
 
 func (q *Queries) ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Hostname, error) {
-	rows, err := q.db.QueryContext(ctx, listHostnamesByBox, boxID)
+	rows, err := q.db.Query(ctx, listHostnamesByBox, boxID)
 	if err != nil {
 		return nil, err
 	}
@@ -65,16 +64,13 @@ func (q *Queries) ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Ho
 			&i.ID,
 			&i.Hostname,
 			&i.BoxID,
-			pq.Array(&i.Tags),
+			&i.Tags,
 			&i.Source,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err
@@ -93,7 +89,7 @@ type ListHostnamesByBoxFilterParams struct {
 }
 
 func (q *Queries) ListHostnamesByBoxFilter(ctx context.Context, arg ListHostnamesByBoxFilterParams) ([]Hostname, error) {
-	rows, err := q.db.QueryContext(ctx, listHostnamesByBoxFilter, arg.BoxID, arg.Hostname, pq.Array(arg.Column3))
+	rows, err := q.db.Query(ctx, listHostnamesByBoxFilter, arg.BoxID, arg.Hostname, arg.Column3)
 	if err != nil {
 		return nil, err
 	}
@@ -105,16 +101,13 @@ func (q *Queries) ListHostnamesByBoxFilter(ctx context.Context, arg ListHostname
 			&i.ID,
 			&i.Hostname,
 			&i.BoxID,
-			pq.Array(&i.Tags),
+			&i.Tags,
 			&i.Source,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

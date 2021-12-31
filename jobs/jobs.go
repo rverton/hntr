@@ -2,14 +2,14 @@ package jobs
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"hntr/db"
 	"log"
 	"time"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/vgarvardt/gue/v3"
-	"github.com/vgarvardt/gue/v3/adapter/libpq"
+	"github.com/vgarvardt/gue/v3/adapter/pgxv4"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -35,9 +35,18 @@ func (js *Jobserver) RunAutomation(ctx context.Context, j *gue.Job) error {
 	return nil
 }
 
-func Init(db *sql.DB, repo *db.Queries) (*gue.Client, context.CancelFunc) {
-	poolAdapter := libpq.NewConnPool(db)
+func Init(dbUrl string, repo *db.Queries) (*gue.Client, context.CancelFunc) {
+	pgxCfg, err := pgxpool.ParseConfig(dbUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
 
+	pgxPool, err := pgxpool.ConnectConfig(context.Background(), pgxCfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	poolAdapter := pgxv4.NewConnPool(pgxPool)
 	gc := gue.NewClient(poolAdapter)
 
 	js := Jobserver{

@@ -1,17 +1,40 @@
 package db
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
+	"log"
 
-	_ "github.com/lib/pq"
+	"github.com/jackc/pgx/v4"
+	"github.com/jackc/pgx/v4/pgxpool"
 )
 
-func SetupRepository(dbserver, dbname, dbuser, dbpass string) (*Queries, *sql.DB, error) {
-	dbc, err := sql.Open("postgres", fmt.Sprintf("user=%v password=%v dbname=%v sslmode=disable", dbuser, dbpass, dbname))
+type qLogger struct {
+}
+
+func (l *qLogger) Log(ctx context.Context, level pgx.LogLevel, msg string, data map[string]interface{}) {
+	if level == pgx.LogLevelInfo && msg == "Query" {
+		fmt.Printf("[SQL] %s -- ARGS: %v\n", data["sql"], data["args"])
+	}
+}
+
+func SetupRepository(dbUrl string, logQueries bool) (*Queries, *pgxpool.Pool, error) {
+	pgxCfg, err := pgxpool.ParseConfig(dbUrl)
 	if err != nil {
-		return nil, nil, err
+		log.Fatal(err)
 	}
 
-	return New(dbc), dbc, nil
+	pgxCfg.ConnConfig.Logger = &qLogger{}
+	pgxCfg.ConnConfig.LogLevel = pgx.LogLevelWarn
+
+	if logQueries {
+		pgxCfg.ConnConfig.LogLevel = pgx.LogLevelInfo
+	}
+
+	pgxPool, err := pgxpool.ConnectConfig(context.Background(), pgxCfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return New(pgxPool), pgxPool, nil
 }
