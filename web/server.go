@@ -14,6 +14,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/vgarvardt/gue/v3"
 )
 
 var ShutdownTimeout = 2 * time.Second
@@ -22,14 +23,16 @@ type Server struct {
 	server *echo.Echo
 	addr   string
 
-	repo *db.Queries
+	repo  *db.Queries
+	queue *gue.Client
 }
 
-func NewServer(addr string, repo *db.Queries) *Server {
+func NewServer(addr string, repo *db.Queries, gc *gue.Client) *Server {
 	debugMode := os.Getenv("DEBUG") != ""
 
 	server := &Server{
-		addr: addr,
+		addr:  addr,
+		queue: gc,
 	}
 
 	e := echo.New()
@@ -44,12 +47,13 @@ func NewServer(addr string, repo *db.Queries) *Server {
 	server.server = e
 	server.repo = repo
 
+	// boxes
+	e.GET("/api/box/:id", server.GetBox)
 	e.POST("/api/box/create", server.CreateBox)
 
-	// domains
-	e.GET("/api/box/:id", server.GetBox)
-	e.GET("/api/box/:id/domains", server.ListHostnames)
-	e.POST("/api/box/:id/domains", server.AddHostnames)
+	// hostnames
+	e.GET("/api/box/:id/hostnames", server.ListHostnames)
+	e.POST("/api/box/:id/hostnames", server.AddHostnames)
 
 	// automations
 	e.GET("/api/box/:id/automations", server.ListAutomations)

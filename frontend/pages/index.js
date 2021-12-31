@@ -9,7 +9,7 @@ export default function Index() {
   const createBox = () => {
     api.post('/box/create')
       .then(resp => {
-        router.push('/domains/?id=' + resp.data.id)
+        router.push('/hostnames/?id=' + resp.data.id)
       })
       .catch(err => {
         console.error(err);

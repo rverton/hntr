@@ -12,10 +12,8 @@ function classNames(...classes) {
 }
 
 const defaultNavigation = [
-  { name: 'Domains', href: '/domains/', current: false },
-  { name: 'Services', href: '/services/', current: false },
+  { name: 'Hostnames', href: '/hostnames/', current: false },
   { name: 'URLs', href: '/urls/', current: false },
-  { name: 'Tools', href: '/tools/', current: false },
   { name: 'Automations', href: '/automations/', current: false },
 ]
 

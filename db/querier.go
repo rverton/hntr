@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	CountHostnamesByBoxFilter(ctx context.Context, arg CountHostnamesByBoxFilterParams) (int64, error)
 	CreateBox(ctx context.Context, name string) (Box, error)
 	CreateHostname(ctx context.Context, arg CreateHostnameParams) error
 	GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error)

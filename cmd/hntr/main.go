@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"hntr/db"
+	"hntr/jobs"
 	"hntr/web"
 
 	"github.com/joho/godotenv"
@@ -49,8 +50,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// setup server
-	server := web.NewServer(*bind, repo)
+	// start job queue
+	gc, shutdownQueue := jobs.Init(dbc, repo)
+	defer shutdownQueue()
+
+	// setup webserver
+	server := web.NewServer(*bind, repo, gc)
 
 	// start webserver
 	if err := server.Start(); err != nil {

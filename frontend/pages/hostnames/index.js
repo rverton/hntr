@@ -8,7 +8,7 @@ import { Dialog, Transition } from '@headlessui/react'
 
 import Layout from '../../components/layout'
 import Tag from '../../components/tagBadge'
-import useDomains from '../../hooks/useDomains'
+import useHostnames from '../../hooks/useHostnames'
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
@@ -21,16 +21,16 @@ export default function Home() {
   const [selected, setSelected] = useState({})
   const [filter, setFilter] = useState("")
   const cancelButtonRef = useRef(null)
-  const { domains, isLoading, isError } = useDomains(id, filter)
+  const { hostnames, isLoading, isError } = useHostnames(id, filter)
 
   const tableMemo = useMemo(() => {
-    return <DomainsTable
-      data={domains}
+    return <HostnamesTable
+      data={hostnames}
       isLoading={isLoading}
       selected={selected}
       setSelected={setSelected}
     />;
-  }, [domains, isLoading, selected])
+  }, [hostnames, isLoading, selected])
 
   function handler({ key }) {
     console.log({ key })
@@ -68,8 +68,8 @@ export default function Home() {
                 onChange={(e) => setFilterInput(e.target.value)}
                 onKeyDown={handleSubmit}
               />
-              {domains && <div className="w-5/12 pl-4 text-sm">
-                {domains.length} hosts
+              {hostnames && <div className="w-5/12 pl-4 text-sm">
+                {hostnames.length} hosts
                 {Object.keys(selected).length > 0 && <span>, {Object.keys(selected).length} selected</span>}
               </div>}
               {isLoading && <div className="w-1/3 ml-4 text-sm">Loading</div>}
@@ -80,7 +80,7 @@ export default function Home() {
           </div>
         </div>
 
-        {isError && <div className="text-red-500">Error loading domains.</div>}
+        {isError && <div className="text-red-500">Error loading hostnames.</div>}
         {!isError && tableMemo}
 
       </Layout>
@@ -117,15 +117,15 @@ export default function Home() {
                 <div className="sm:flex sm:items-start">
                   <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                     <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                      Import Domains
+                      Import Hostnames
                     </Dialog.Title>
                     <div className="mt-2">
                       <p className="text-sm text-gray-500">
-                        You can use the following command to pipe domains directly into your box:
+                        You can use the following command to pipe hostnames directly into your box:
                       </p>
 
                       <div className="font-mono border p-5 text-sm my-3">
-                        <span className="text-gray-400">cat domains.txt | </span><span id="curl">curl --data-binary @- &quot;{apiUrl}/box/{id}/domains&quot;</span>
+                        <span className="text-gray-400">cat hostnames.txt | </span><span id="curl">curl --data-binary @- &quot;{apiUrl}/box/{id}/hostnames&quot;</span>
                       </div>
 
                       <p className="text-sm text-gray-500">
@@ -133,7 +133,7 @@ export default function Home() {
                       </p>
 
                       <div className="font-mono border p-5 text-sm my-3">
-                        <span className="text-gray-400">echo example.com | </span>curl --data-binary @- &quot;{apiUrl}/box/{id}/domains?tags=is_scope&quot;
+                        <span className="text-gray-400">echo example.com | </span>curl --data-binary @- &quot;{apiUrl}/box/{id}/hostnames?tags=is_scope&quot;
                       </div>
                     </div>
                   </div>
@@ -157,7 +157,7 @@ export default function Home() {
   )
 }
 
-function DomainsTable({ data, selected, setSelected }) {
+function HostnamesTable({ data, selected, setSelected }) {
   const toggleRowSelection = (guid) => {
     let copy = Object.assign({}, selected)
 

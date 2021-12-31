@@ -10,6 +10,23 @@ import (
 	"github.com/lib/pq"
 )
 
+const countHostnamesByBoxFilter = `-- name: CountHostnamesByBoxFilter :one
+SELECT count(*) from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::text[] <@ tags
+`
+
+type CountHostnamesByBoxFilterParams struct {
+	BoxID    uuid.UUID `json:"box_id"`
+	Hostname string    `json:"hostname"`
+	Column3  []string  `json:"column_3"`
+}
+
+func (q *Queries) CountHostnamesByBoxFilter(ctx context.Context, arg CountHostnamesByBoxFilterParams) (int64, error) {
+	row := q.db.QueryRowContext(ctx, countHostnamesByBoxFilter, arg.BoxID, arg.Hostname, pq.Array(arg.Column3))
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createHostname = `-- name: CreateHostname :exec
 INSERT INTO hostnames (hostname, tags, box_id, source) VALUES ($1, $2, $3, $4) RETURNING id, hostname, box_id, tags, source, created_at
 `
