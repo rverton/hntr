@@ -75,6 +75,8 @@ func (s *Server) StartAutomation(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
+	// TODO: switch based on table
+
 	// get all entries matching automation.source_table and automation.source_tags
 	params := db.ListHostnamesByBoxFilterParams{
 		BoxID:    automation.BoxID,
@@ -90,8 +92,6 @@ func (s *Server) StartAutomation(c echo.Context) error {
 
 	// enqueue job for each entry
 	for _, hostname := range hostnames {
-
-		log.Println(hostname)
 
 		// enqueue job
 		args, err := json.Marshal(jobs.RunAutomationArgs{

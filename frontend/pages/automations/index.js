@@ -30,7 +30,7 @@ export default function Home() {
         {isError && <div>An error occured loading automations</div>}
 
         <div className="mt-4">
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
+          <div className="bg-white shadow border overflow-hidden sm:rounded-md">
             <ul role="list" className="divide-y divide-gray-200">
               {automations && automations.map((automation) => (
                 <Automation key={automation.id} automation={automation} />
@@ -47,7 +47,7 @@ export default function Home() {
 
 function Automation({ automation }) {
   return (
-    <li className="bg-gray-50" key={automation.id}>
+    <li className="" key={automation.id}>
       <Link href={`/automations/show?id=${automation.box_id}&aid=${automation.id}`}>
         <a className="block hover:bg-gray-50">
           <div className="flex items-center px-4 py-4 sm:px-6">

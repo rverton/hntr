@@ -1,15 +1,12 @@
-import Head from 'next/head'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 
 import { useState, useEffect } from 'react'
 
 import Layout from '../../components/layout'
 import useAutomations from '../../hooks/useAutomations'
-import { PaperClipIcon } from '@heroicons/react/solid'
 
 import api from '../../lib/api'
-
-const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
 export default function Home() {
   const router = useRouter()
@@ -39,13 +36,19 @@ export default function Home() {
       })
   }
 
+  if (isError) return <div>An error occured loading the data.</div>
+
   return (
     <>
       <Layout>
         <div className="flex justify-between">
           <div className="pb-5">
             <h3 className="text-lg leading-6 font-medium text-gray-900">Automation {automation.name}</h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">Targeting {automation.source_count} entries</p>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              Targeting{' '}
+              <Link href={`/${automation.source_table}/?id=${id}`}><a className="text-blue-600">{automation.source_count} entries</a></Link>{' '}
+              currently
+            </p>
           </div>
           <div className="flex items-center">
             <button onClick={() => runAutomation(automation.id)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 uppercase tracking-widest text-xs font-semibold border border-transparent shadow-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 sm:mt-0 sm:w-auto">

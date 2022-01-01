@@ -923,8 +923,8 @@ github.com/valyala/fasttemplate v1.2.1 h1:TVEnxayobAdVkhQfrfes2IzOB6o+z4roRkPF52
 github.com/valyala/fasttemplate v1.2.1/go.mod h1:KHLXt3tVN2HBp8eijSv/kGJopbvo7S+qRAEEKiv+SiQ=
 github.com/vgarvardt/backoff v1.0.0 h1:VKub60RkA/po0gz0fHsr1vWb6pbyvOQpOs/4Ciw4atM=
 github.com/vgarvardt/backoff v1.0.0/go.mod h1:Om8PDVpm4MpRNDg/IKpJWsvS2MabY7LtwSahd09zg8E=
-github.com/vgarvardt/gue/v3 v3.2.0 h1:Gwu7IOEDwUBezJnObsUrfnhgESVrWk7IgajTOOV/Q3c=
-github.com/vgarvardt/gue/v3 v3.2.0/go.mod h1:KCmyw32GYOzsZRhes4zt3ga8+LKxejwkP+sxfuKtXjk=
+github.com/vgarvardt/gue/v3 v3.3.0 h1:++ip8pO7jRaPMHckKJdX0yja0sbGHqhuRTO8Ogzy/jc=
+github.com/vgarvardt/gue/v3 v3.3.0/go.mod h1:KCmyw32GYOzsZRhes4zt3ga8+LKxejwkP+sxfuKtXjk=
 github.com/vishvananda/netlink v0.0.0-20181108222139-023a6dafdcdf/go.mod h1:+SR5DhBJrl6ZM7CoCKvpw5BKroDKQ+PJqOg65H/2ktk=
 github.com/vishvananda/netlink v1.1.0/go.mod h1:cTgwzPIzzgDAYoQrMm0EdrjRUBkTqKYppBueQtXaqoE=
 github.com/vishvananda/netlink v1.1.1-0.20201029203352-d40f9887b852/go.mod h1:twkDnbuQxJYemMlGd4JFIcuhgX83tXhKS2B/PRMpOho=
