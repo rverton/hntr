@@ -69,6 +69,5 @@ type Hostname struct {
 	Hostname  string    `json:"hostname"`
 	BoxID     uuid.UUID `json:"box_id"`
 	Tags      []string  `json:"tags"`
-	Source    string    `json:"source"`
 	CreatedAt time.Time `json:"created_at"`
 }

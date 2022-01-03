@@ -62,6 +62,8 @@ func (s *Server) AddHostnames(c echo.Context) error {
 		return c == ','
 	})
 
+	tags = append(tags, "source:api")
+
 	added := 0
 
 	for _, line := range strings.Split(string(b), "\n") {
@@ -74,7 +76,6 @@ func (s *Server) AddHostnames(c echo.Context) error {
 			Hostname: line,
 			BoxID:    id,
 			Tags:     tags,
-			Source:   "api",
 		}
 
 		err := s.repo.CreateHostname(ctx, data)

@@ -27,28 +27,22 @@ func (q *Queries) CountHostnamesByBoxFilter(ctx context.Context, arg CountHostna
 }
 
 const createHostname = `-- name: CreateHostname :exec
-INSERT INTO hostnames (hostname, tags, box_id, source) VALUES ($1, $2, $3, $4) RETURNING id, hostname, box_id, tags, source, created_at
+INSERT INTO hostnames (hostname, tags, box_id) VALUES ($1, $2, $3) RETURNING id, hostname, box_id, tags, created_at
 `
 
 type CreateHostnameParams struct {
 	Hostname string    `json:"hostname"`
 	Tags     []string  `json:"tags"`
 	BoxID    uuid.UUID `json:"box_id"`
-	Source   string    `json:"source"`
 }
 
 func (q *Queries) CreateHostname(ctx context.Context, arg CreateHostnameParams) error {
-	_, err := q.db.Exec(ctx, createHostname,
-		arg.Hostname,
-		arg.Tags,
-		arg.BoxID,
-		arg.Source,
-	)
+	_, err := q.db.Exec(ctx, createHostname, arg.Hostname, arg.Tags, arg.BoxID)
 	return err
 }
 
 const listHostnamesByBox = `-- name: ListHostnamesByBox :many
-SELECT id, hostname, box_id, tags, source, created_at from hostnames WHERE box_id = $1 ORDER BY created_at DESC
+SELECT id, hostname, box_id, tags, created_at from hostnames WHERE box_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Hostname, error) {
@@ -65,7 +59,6 @@ func (q *Queries) ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Ho
 			&i.Hostname,
 			&i.BoxID,
 			&i.Tags,
-			&i.Source,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -79,7 +72,7 @@ func (q *Queries) ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Ho
 }
 
 const listHostnamesByBoxFilter = `-- name: ListHostnamesByBoxFilter :many
-SELECT id, hostname, box_id, tags, source, created_at from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::text[] <@ tags ORDER BY created_at DESC
+SELECT id, hostname, box_id, tags, created_at from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::text[] <@ tags ORDER BY created_at DESC
 `
 
 type ListHostnamesByBoxFilterParams struct {
@@ -102,7 +95,6 @@ func (q *Queries) ListHostnamesByBoxFilter(ctx context.Context, arg ListHostname
 			&i.Hostname,
 			&i.BoxID,
 			&i.Tags,
-			&i.Source,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err

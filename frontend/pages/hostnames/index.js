@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { formatDistanceToNow, parseISO } from 'date-fns'
+import { format, parseISO } from 'date-fns'
 import useEventListener from '@use-it/event-listener'
 
 import { Fragment, useRef, useState, useMemo } from 'react'
@@ -178,11 +178,8 @@ function HostnamesTable({ data, selected, setSelected }) {
             <th className="w-4/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-l">
               DNS Name
             </th>
-            <th className="w-4/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
+            <th className="w-6/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
               Tags
-            </th>
-            <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
-              Source
             </th>
             <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-r">
               Added
@@ -208,10 +205,9 @@ function HostnamesTable({ data, selected, setSelected }) {
                   )}
                   &nbsp;
                 </td>
-                <td className="text-sm py-1 px-2 border-b border-gray-200 border-dashed">{hostname.source}</td>
-                <td className="text-sm py-1 px-2 border-b border-gray-200 border-dashed">{formatDistanceToNow(
-                  parseISO(hostname.created_at)
-                )}</td>
+                <td className="text-sm py-1 px-2 border-b border-gray-200 border-dashed text-gray-500">
+                  {format(parseISO(hostname.created_at), 'yy-MM-dd HH:mm:ss')}
+                </td>
               </tr>
             )}
           </tbody>

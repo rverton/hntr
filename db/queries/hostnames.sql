@@ -8,4 +8,4 @@ SELECT * from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::text[] <@
 SELECT count(*) from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::text[] <@ tags;
 
 -- name: CreateHostname :exec
-INSERT INTO hostnames (hostname, tags, box_id, source) VALUES ($1, $2, $3, $4) RETURNING *;
+INSERT INTO hostnames (hostname, tags, box_id) VALUES ($1, $2, $3) RETURNING *;
