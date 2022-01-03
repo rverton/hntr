@@ -1,7 +1,7 @@
 include .env
 export
 
-postgres="postgres://${POSTGRES_USER}:${POSTGRES_PASS}@${POSTGRES_HOST}/${POSTGRES_DB}?sslmode=disable"
+postgres=${POSTGRES_URL}
 
 .PHONY: frontend
 

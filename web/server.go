@@ -57,6 +57,7 @@ func NewServer(addr string, repo *db.Queries, gc *gue.Client) *Server {
 
 	// automations
 	e.GET("/api/box/:id/automations", server.ListAutomations)
+	e.GET("/api/automations/:id/events", server.ListAutomationEvents)
 	e.POST("/api/automations/:id/start", server.StartAutomation)
 
 	assetHandler := http.FileServer(getFileSystem(frontend.Files, debugMode, e.Logger))

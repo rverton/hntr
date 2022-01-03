@@ -10,14 +10,18 @@ import (
 
 type Querier interface {
 	CountHostnamesByBoxFilter(ctx context.Context, arg CountHostnamesByBoxFilterParams) (int64, error)
+	CreateAutomationEvent(ctx context.Context, arg CreateAutomationEventParams) (AutomationEvent, error)
 	CreateBox(ctx context.Context, name string) (Box, error)
 	CreateHostname(ctx context.Context, arg CreateHostnameParams) error
 	GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error)
 	GetBox(ctx context.Context, id uuid.UUID) (Box, error)
+	ListAutomationEvents(ctx context.Context, automationID uuid.UUID) ([]AutomationEvent, error)
 	ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Automation, error)
 	ListBoxes(ctx context.Context) ([]Box, error)
 	ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Hostname, error)
 	ListHostnamesByBoxFilter(ctx context.Context, arg ListHostnamesByBoxFilterParams) ([]Hostname, error)
+	UpdateAutomationEventStatusFinished(ctx context.Context, id uuid.UUID) error
+	UpdateAutomationEventStatusStarted(ctx context.Context, id uuid.UUID) error
 }
 
 var _ Querier = (*Queries)(nil)

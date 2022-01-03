@@ -1,14 +1,15 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-
 import { useState, useEffect } from 'react'
+import { format, parseISO } from 'date-fns'
 
 import Layout from '../../components/layout'
 import useAutomations from '../../hooks/useAutomations'
+import useAutomationEvents from '../../hooks/useAutomationEvents'
 
 import api from '../../lib/api'
 
-export default function Home() {
+export default function AutomationShow() {
   const router = useRouter()
   const { id, aid } = router.query
   const [automation, setAutomation] = useState({})
@@ -28,7 +29,7 @@ export default function Home() {
   const runAutomation = async (aid) => {
     api.post(`/automations/${aid}/start`)
       .then(() => {
-        console.log('started')
+        console.log('started automation')
       })
       .catch(err => {
         console.error(err);
@@ -91,21 +92,18 @@ export default function Home() {
 
         <div className="mt-5">
           <h3 className="mb-5 text-lg leading-6 font-medium text-gray-900">Recent runs</h3>
-          <AutomationRunsTable />
+          <AutomationRunsTable automationId={automation.id} />
         </div>
       </Layout>
     </>
   )
 }
 
-function AutomationRunsTable() {
+function AutomationRunsTable({ automationId }) {
+  const { events, isLoading, isError } = useAutomationEvents(automationId)
 
-
-  /* This example requires Tailwind CSS v2.0+ */
-  const people = [
-    { name: 'Jane Cooper', title: 'Regional Paradigm Technician', role: 'Admin', email: 'jane.cooper@example.com' },
-    // More people...
-  ]
+  if (isError) return <div>An error occured loading the data.</div>
+  if (isLoading) return <div>Loading</div>
 
   return (
     <div className="flex flex-col">
@@ -114,33 +112,38 @@ function AutomationRunsTable() {
           <table className="w-full table-fixed mb-8">
             <thead>
               <tr>
-                <th className="w-4/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-l">
-                  Date
-                </th>
-                <th className="w-4/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
+                <th className="w-1/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-l">
                   Status
                 </th>
                 <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
-                  Unique results
+                  Started
                 </th>
-                <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-r">
-
+                <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
+                  Finished
+                </th>
+                <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
+                  Unique Results
+                </th>
+                <th className="w-7/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-r">
+                  Data
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {people.map((person) => (
-                <tr key={person.email}>
-                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm font-medium text-gray-900">{person.name}</td>
-                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">192</td>
-                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">Success</td>
-                  <td className="px-2 py-1 text-sm whitespace-nowrap text-right text-sm font-medium">
-                    <a href="#" className="text-indigo-600 hover:text-indigo-900">
-                      View
-                    </a>
+              {events.map((event) => (
+                <tr key={event.id}>
+                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm font-medium text-gray-900">{event.status}</td>
+                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">
+                    {format(parseISO(event.created_at), 'yy-MM-dd HH:mm:ss')}
                   </td>
+                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">
+                    {event.finished_at.Valid && format(parseISO(event.finished_at.Time), 'yy-MM-dd HH:mm:ss')}
+                  </td>
+                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">{event.unique_results}</td>
+                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">{event.data}</td>
                 </tr>
               ))}
+              {events && events.length <= 0 && <tr><td colspan="5" className="p-3 text-center">No runs till yet.</td></tr>}
             </tbody>
           </table>
         </div>

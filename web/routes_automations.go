@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"hntr/db"
 	"hntr/jobs"
 	"log"
@@ -34,7 +35,7 @@ func (s *Server) ListAutomations(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	var automationCounts []AutomationHostnameCount
+	automationCounts := []AutomationHostnameCount{}
 
 	for _, automation := range automations {
 		params := db.CountHostnamesByBoxFilterParams{
@@ -56,6 +57,24 @@ func (s *Server) ListAutomations(c echo.Context) error {
 	return c.JSON(http.StatusOK, automationCounts)
 }
 
+func (s *Server) ListAutomationEvents(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		log.Printf("unable to parse id: %v", err)
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	automationEvents, err := s.repo.ListAutomationEvents(ctx, id)
+	if err != nil && err != sql.ErrNoRows {
+		log.Printf("listing automations failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusOK, automationEvents)
+}
+
 func (s *Server) StartAutomation(c echo.Context) error {
 	ctx := context.Background()
 
@@ -75,7 +94,18 @@ func (s *Server) StartAutomation(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	// TODO: switch based on table
+	if err := createAndEnqueue(ctx, automation, s.repo, s.queue); err != nil {
+		log.Printf("error creating job: %v\n", err)
+		return c.JSON(http.StatusInternalServerError, automation)
+	}
+
+	return c.JSON(http.StatusOK, automation)
+}
+
+func createAndEnqueue(ctx context.Context, automation db.Automation, repo *db.Queries, queue *gue.Client) error {
+
+	// TODO: switch source between hostname/URL based on automation.source_table
+	// TODO: switch target between hostname/URL based on automation.target_table
 
 	// get all entries matching automation.source_table and automation.source_tags
 	params := db.ListHostnamesByBoxFilterParams{
@@ -84,32 +114,43 @@ func (s *Server) StartAutomation(c echo.Context) error {
 		Column3:  automation.SourceTags,
 	}
 
-	hostnames, err := s.repo.ListHostnamesByBoxFilter(ctx, params)
+	hostnames, err := repo.ListHostnamesByBoxFilter(ctx, params)
 	if err != nil && err != sql.ErrNoRows {
-		log.Printf("getting hostnames failed: %v", err)
-		return c.JSON(http.StatusInternalServerError, nil)
+		return fmt.Errorf("getting hostnames failed: %v", err)
 	}
 
-	// enqueue job for each entry
+	// create and enqueue job for each entry
 	for _, hostname := range hostnames {
 
-		// enqueue job
+		ae, err := repo.CreateAutomationEvent(ctx, db.CreateAutomationEventParams{
+			BoxID:        automation.BoxID,
+			AutomationID: automation.ID,
+			Status:       "pending",
+			Data:         hostname.Hostname,
+		})
+		if err != nil {
+			return fmt.Errorf("error creating automation event: %v", err)
+		}
+
+		// encode arguments
 		args, err := json.Marshal(jobs.RunAutomationArgs{
+			JobID:      ae.ID,
 			Automation: automation,
 			Data:       hostname.Hostname,
 		})
 		if err != nil {
-			log.Println("error marshaling job", err)
+			return fmt.Errorf("error marshaling job: %v", err)
 		}
 
+		// create and enqueue job
 		j := &gue.Job{
 			Type: "RunAutomation",
 			Args: args,
 		}
-		if err := s.queue.Enqueue(ctx, j); err != nil {
-			log.Println("error enqueueing job", err)
+		if err := queue.Enqueue(ctx, j); err != nil {
+			return fmt.Errorf("error enqueueing job: %v", err)
 		}
 	}
 
-	return c.JSON(http.StatusOK, automation)
+	return nil
 }

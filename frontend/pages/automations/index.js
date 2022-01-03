@@ -35,6 +35,10 @@ export default function Home() {
               {automations && automations.map((automation) => (
                 <Automation key={automation.id} automation={automation} />
               ))}
+              {automations && !automations.length && <div className="p-6">
+                You have not setup any automations yet.
+              </div>
+              }
             </ul>
           </div>
         </div>

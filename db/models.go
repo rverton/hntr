@@ -22,10 +22,32 @@ type Automation struct {
 	CreatedAt        time.Time `json:"created_at"`
 }
 
+type AutomationEvent struct {
+	ID            uuid.UUID    `json:"id"`
+	BoxID         uuid.UUID    `json:"box_id"`
+	AutomationID  uuid.UUID    `json:"automation_id"`
+	Status        string       `json:"status"`
+	Data          string       `json:"data"`
+	UniqueResults int32        `json:"unique_results"`
+	CreatedAt     time.Time    `json:"created_at"`
+	FinishedAt    sql.NullTime `json:"finished_at"`
+}
+
 type Box struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type GueFinishedJob struct {
+	JobID      int64          `json:"job_id"`
+	Queue      string         `json:"queue"`
+	JobType    string         `json:"job_type"`
+	Args       pgtype.JSON    `json:"args"`
+	ErrorCount int32          `json:"error_count"`
+	LastError  sql.NullString `json:"last_error"`
+	StartedAt  sql.NullTime   `json:"started_at"`
+	FinishedAt time.Time      `json:"finished_at"`
 }
 
 // 1
@@ -43,7 +65,7 @@ type GueJob struct {
 }
 
 type Hostname struct {
-	ID        int32     `json:"id"`
+	ID        int64     `json:"id"`
 	Hostname  string    `json:"hostname"`
 	BoxID     uuid.UUID `json:"box_id"`
 	Tags      []string  `json:"tags"`

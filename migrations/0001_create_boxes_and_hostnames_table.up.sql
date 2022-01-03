@@ -8,7 +8,7 @@ CREATE TABLE boxes (
 );
 
 CREATE TABLE hostnames (
-    id serial,
+    id bigserial,
     hostname VARCHAR NOT NULL,
     box_id  uuid NOT NULL,
     tags text[],

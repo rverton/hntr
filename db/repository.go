@@ -9,13 +9,23 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
+const colorBlue = "\033[34m"
+const colorReset = "\033[0m"
+
 type qLogger struct {
 }
 
 func (l *qLogger) Log(ctx context.Context, level pgx.LogLevel, msg string, data map[string]interface{}) {
-	if level == pgx.LogLevelInfo && msg == "Query" {
-		fmt.Printf("[SQL] %s -- ARGS: %v\n", data["sql"], data["args"])
+	if _, ok := data["sql"]; !ok {
+		return
 	}
+
+	fmt.Printf("%s[SQL] `%s` %+v%s\n",
+		colorBlue,
+		data["sql"],
+		data["args"],
+		colorReset,
+	)
 }
 
 func SetupRepository(dbUrl string, logQueries bool) (*Queries, *pgxpool.Pool, error) {
