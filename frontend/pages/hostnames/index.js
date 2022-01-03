@@ -12,6 +12,10 @@ import useHostnames from '../../hooks/useHostnames'
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
+function classNames(...classes) {
+  return classes.filter(Boolean).join(' ')
+}
+
 export default function Home() {
   const router = useRouter()
   const { id } = router.query
@@ -52,36 +56,44 @@ export default function Home() {
 
       <Layout>
 
-        <div>
-          <div className="flex justify-between items-center">
-            <div className="flex w-full sm:max-w-md items-center">
-              <input
-                minLength={2}
-                autoFocus
-                type="text"
-                name="filter"
-                id="filter"
-                className="shadow-sm focus:ring-gray-500 focus:border-gray-500 block w-7/12 text-xs border-gray-300 rounded-md"
-                placeholder="foo.com tag:is_scope"
-                autoComplete=""
-                value={filterInput}
-                onChange={(e) => setFilterInput(e.target.value)}
-                onKeyDown={handleSubmit}
-              />
-              {hostnames && <div className="w-5/12 pl-4 text-sm">
-                {hostnames.length} hosts
-                {Object.keys(selected).length > 0 && <span>, {Object.keys(selected).length} selected</span>}
-              </div>}
-              {isLoading && <div className="w-1/3 ml-4 text-sm">Loading</div>}
+        <div className="relative">
+          <div className="h-16 ml-44 flex fixed top-0 left-0 right-0 items-center border-b px-4 bg-white">
+
+            <div className="w-full flex justify-between items-center">
+              <div className="flex w-full sm:max-w-md items-center">
+                <input
+                  minLength={2}
+                  autoFocus
+                  type="text"
+                  name="filter"
+                  id="filter"
+                  className="focus:ring-0 focus:border-0 block w-7/12 text-sm text-gray-600 border-0"
+                  placeholder="Filter: foo.com tag:is_scope"
+                  autoComplete=""
+                  value={filterInput}
+                  onChange={(e) => setFilterInput(e.target.value)}
+                  onKeyDown={handleSubmit}
+                />
+                {isLoading && <div className="w-1/3 ml-4 text-sm">Loading</div>}
+              </div>
+              <div className="flex items-center">
+                {hostnames && <div className="pl-4 text-sm">
+                  {hostnames.length} hosts
+                  {Object.keys(selected).length > 0 && <span>, {Object.keys(selected).length} selected</span>}
+                </div>}
+                <button onClick={() => setShowModal(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 uppercase tracking-widest text-xs font-semibold border border-transparent shadow-sm font-medium rounded-md text-white bg-orange-800 hover:bg-orange-900 sm:mt-0 sm:ml-3 sm:w-auto">
+                  Import
+                </button>
+              </div>
             </div>
-            <button onClick={() => setShowModal(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 uppercase tracking-widest text-xs font-semibold border border-transparent shadow-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 sm:mt-0 sm:ml-3 sm:w-auto">
-              Import
-            </button>
+
           </div>
         </div>
 
-        {isError && <div className="text-red-500">Error loading hostnames.</div>}
-        {!isError && tableMemo}
+        <div className="pt-16">
+          {isError && <div className="text-red-500">Error loading hostnames.</div>}
+          {!isError && tableMemo}
+        </div>
 
       </Layout>
 
@@ -169,6 +181,47 @@ function HostnamesTable({ data, selected, setSelected }) {
 
     setSelected(copy)
   }
+
+  return (
+    <div className="flex flex-col text-gray-500">
+      {data?.length > 0 && data.map(hostname => (
+        <div
+          key={hostname.id}
+          className={classNames(
+            "flex px-6 space-x-5 border-b py-1 text-sm bg-gray-50",
+            hostname.id in selected ? 'bg-orange-100' : ''
+          )}
+          onDoubleClick={() => toggleRowSelection(hostname.id)}
+        >
+          <div className="text-gray-400 w-32 font-light text-sm">
+            {format(parseISO(hostname.created_at), 'yy-MM-dd HH:mm:ss')}
+          </div>
+
+          <div className="text-green-800 w-1/4">
+            {hostname.hostname}
+          </div>
+
+          <div className="flex space-x-1 text-sm">
+            {hostname.tags?.map((tag, i) =>
+              <Tag key={i} name={tag} />
+            )}
+            &nbsp;
+          </div>
+        </div>
+      ))}
+
+      {
+        !data &&
+        <div className="text-center text-lg text-bold p-3">Loading</div>
+      }
+
+      {
+        data && !data.length &&
+        <div className="text-center text-bold p-10">No hostnames added. Please use the import function.</div>
+      }
+    </div>
+
+  )
 
   return (
     <>

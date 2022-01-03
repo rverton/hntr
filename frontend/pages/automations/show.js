@@ -42,22 +42,27 @@ export default function AutomationShow() {
   return (
     <>
       <Layout>
-        <div className="flex justify-between">
-          <div className="pb-5">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">Automation {automation.name}</h3>
-            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+
+
+        <div className="h-16 flex items-center border-b px-4 bg-white text-xl justify-between">
+          <div>
+            <div className="text-xl">Automations: {automation.name}</div>
+          </div>
+
+
+          <div className="flex items-center space-x-4">
+            <div className="max-w-2xl text-sm text-gray-500">
               Targeting{' '}
               <Link href={`/${automation.source_table}/?id=${id}`}><a className="text-blue-600">{automation.source_count} entries</a></Link>{' '}
               currently
-            </p>
-          </div>
-          <div className="flex items-center">
+            </div>
             <button onClick={() => runAutomation(automation.id)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 uppercase tracking-widest text-xs font-semibold border border-transparent shadow-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 sm:mt-0 sm:w-auto">
               Start Job
             </button>
           </div>
         </div>
-        <div className="border-t border-gray-200 py-5">
+
+        <div className="p-5">
           <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
             <div className="sm:col-span-1">
               <dt className="text-sm font-medium text-gray-500">Source Table</dt>
@@ -90,7 +95,7 @@ export default function AutomationShow() {
           </dl>
         </div>
 
-        <div className="mt-5">
+        <div className="p-5">
           <h3 className="mb-5 text-lg leading-6 font-medium text-gray-900">Recent runs</h3>
           <AutomationRunsTable automationId={automation.id} />
         </div>

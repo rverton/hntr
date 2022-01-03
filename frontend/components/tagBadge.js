@@ -3,12 +3,15 @@ function classNames(...classes) {
 }
 
 export default function Tag({ name, color = 'gray' }) {
-  const bgColor = 'bg-gray-100';
+  const bgColor = 'bg-gray-200';
   const fgColor = 'text-gray-800';
 
   if (color == 'blue') {
     bgColor = 'bg-blue-100';
     fgColor = 'text-blue-800';
+  } else if (color == 'orange') {
+    bgColor = 'bg-orange-100';
+    fgColor = 'text-orange-800';
   }
 
   return (
