@@ -106,3 +106,47 @@ func (q *Queries) ListHostnamesByBoxFilter(ctx context.Context, arg ListHostname
 	}
 	return items, nil
 }
+
+const listHostnamesByBoxFilterPaginated = `-- name: ListHostnamesByBoxFilterPaginated :many
+SELECT id, hostname, box_id, tags, created_at from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::text[] <@ tags ORDER BY created_at DESC LIMIT $4 OFFSET $5
+`
+
+type ListHostnamesByBoxFilterPaginatedParams struct {
+	BoxID    uuid.UUID `json:"box_id"`
+	Hostname string    `json:"hostname"`
+	Column3  []string  `json:"column_3"`
+	Limit    int32     `json:"limit"`
+	Offset   int32     `json:"offset"`
+}
+
+func (q *Queries) ListHostnamesByBoxFilterPaginated(ctx context.Context, arg ListHostnamesByBoxFilterPaginatedParams) ([]Hostname, error) {
+	rows, err := q.db.Query(ctx, listHostnamesByBoxFilterPaginated,
+		arg.BoxID,
+		arg.Hostname,
+		arg.Column3,
+		arg.Limit,
+		arg.Offset,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Hostname{}
+	for rows.Next() {
+		var i Hostname
+		if err := rows.Scan(
+			&i.ID,
+			&i.Hostname,
+			&i.BoxID,
+			&i.Tags,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

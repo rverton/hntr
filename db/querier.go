@@ -20,6 +20,7 @@ type Querier interface {
 	ListBoxes(ctx context.Context) ([]Box, error)
 	ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Hostname, error)
 	ListHostnamesByBoxFilter(ctx context.Context, arg ListHostnamesByBoxFilterParams) ([]Hostname, error)
+	ListHostnamesByBoxFilterPaginated(ctx context.Context, arg ListHostnamesByBoxFilterPaginatedParams) ([]Hostname, error)
 	UpdateAutomationEventStatusFinished(ctx context.Context, id uuid.UUID) error
 	UpdateAutomationEventStatusStarted(ctx context.Context, id uuid.UUID) error
 }

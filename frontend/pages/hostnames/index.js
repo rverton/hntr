@@ -1,13 +1,14 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { format, parseISO } from 'date-fns'
-import useEventListener from '@use-it/event-listener'
 
 import { Fragment, useRef, useState, useMemo } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 
 import Layout from '../../components/layout'
 import Tag from '../../components/tagBadge'
+import LimitSelect from '../../components/limitSelect'
+
 import useHostnames from '../../hooks/useHostnames'
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL
@@ -15,6 +16,8 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
+
+const LIMIT = 500
 
 export default function Home() {
   const router = useRouter()
@@ -24,8 +27,9 @@ export default function Home() {
   const [filterInput, setFilterInput] = useState("")
   const [selected, setSelected] = useState({})
   const [filter, setFilter] = useState("")
+  const [limit, setLimit] = useState(LIMIT)
   const cancelButtonRef = useRef(null)
-  const { hostnames, isLoading, isError } = useHostnames(id, filter)
+  const { hostnames, count, isLoading, isError } = useHostnames(id, filter, limit)
 
   const tableMemo = useMemo(() => {
     return <HostnamesTable
@@ -36,17 +40,13 @@ export default function Home() {
     />;
   }, [hostnames, isLoading, selected])
 
-  function handler({ key }) {
-    console.log({ key })
-  }
-
   function handleSubmit(e) {
     if (e.key == 'Enter') {
       setFilter(filterInput)
     }
   }
 
-  useEventListener('keydown', handler);
+  const numberFormat = n => new Intl.NumberFormat().format(n)
 
   return (
     <>
@@ -74,13 +74,15 @@ export default function Home() {
                   onChange={(e) => setFilterInput(e.target.value)}
                   onKeyDown={handleSubmit}
                 />
-                {isLoading && <div className="w-1/3 ml-4 text-sm">Loading</div>}
               </div>
               <div className="flex items-center">
                 {hostnames && <div className="pl-4 text-sm">
-                  {hostnames.length} hosts
+                  {numberFormat(count)} hosts
                   {Object.keys(selected).length > 0 && <span>, {Object.keys(selected).length} selected</span>}
                 </div>}
+
+                <LimitSelect limit={limit} setLimit={setLimit} />
+
                 <button onClick={() => setShowModal(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm rounded-md text-white bg-orange-800 hover:bg-orange-900 sm:mt-0 sm:ml-3 sm:w-auto">
                   Import
                 </button>

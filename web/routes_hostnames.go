@@ -7,12 +7,15 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 )
+
+const LIMIT_MAX = 50000
 
 func (s *Server) ListHostnames(c echo.Context) error {
 	ctx := context.Background()
@@ -23,24 +26,46 @@ func (s *Server) ListHostnames(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, nil)
 	}
 
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	if limit < 1 || limit > LIMIT_MAX {
+		limit = 500
+	}
+
 	// term
 	term := c.QueryParam("term")
 
 	searchword, tags := parseTerm(term)
 
-	params := db.ListHostnamesByBoxFilterParams{
+	params := db.ListHostnamesByBoxFilterPaginatedParams{
+		BoxID:    id,
+		Hostname: "%" + searchword + "%",
+		Column3:  tags,
+		Limit:    int32(limit),
+		Offset:   0,
+	}
+
+	paramsCount := db.CountHostnamesByBoxFilterParams{
 		BoxID:    id,
 		Hostname: "%" + searchword + "%",
 		Column3:  tags,
 	}
 
-	hostnames, err := s.repo.ListHostnamesByBoxFilter(ctx, params)
+	hostnames, err := s.repo.ListHostnamesByBoxFilterPaginated(ctx, params)
 	if err != nil && err != sql.ErrNoRows {
 		log.Printf("listing boxes failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	return c.JSON(http.StatusOK, hostnames)
+	count, err := s.repo.CountHostnamesByBoxFilter(ctx, paramsCount)
+	if err != nil && err != sql.ErrNoRows {
+		log.Printf("listing boxes failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"count":     count,
+		"hostnames": hostnames,
+	})
 }
 
 func (s *Server) AddHostnames(c echo.Context) error {
