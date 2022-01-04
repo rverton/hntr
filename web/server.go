@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/vgarvardt/gue/v3"
@@ -23,16 +24,21 @@ type Server struct {
 	server *echo.Echo
 	addr   string
 
-	repo  *db.Queries
-	queue *gue.Client
+	repo   *db.Queries
+	dbPool *pgxpool.Pool
+	queue  *gue.Client
+
+	insertLimit int
 }
 
-func NewServer(addr string, repo *db.Queries, gc *gue.Client) *Server {
+func NewServer(addr string, insertLimit int, repo *db.Queries, dbPool *pgxpool.Pool, gc *gue.Client) *Server {
 	debugMode := os.Getenv("DEBUG") != ""
 
 	server := &Server{
-		addr:  addr,
-		queue: gc,
+		addr:        addr,
+		queue:       gc,
+		dbPool:      dbPool,
+		insertLimit: insertLimit,
 	}
 
 	e := echo.New()

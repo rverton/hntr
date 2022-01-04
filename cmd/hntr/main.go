@@ -32,8 +32,9 @@ func main() {
 	fs := flag.NewFlagSet("hntr", flag.ExitOnError)
 
 	var (
-		dbUrl = fs.String("postgres-url", "", "postgres db url, e.g. postgres://user:pass@localhost:5432/dbname")
-		bind  = fs.String("bind", ":8080", "bind to [ip]:port")
+		dbUrl       = fs.String("postgres-url", "", "postgres db url, e.g. postgres://user:pass@localhost:5432/dbname")
+		bind        = fs.String("bind", ":8080", "bind to [ip]:port")
+		insertLimit = fs.Int("insert-limit", 10000, "max. number of inserts at once")
 	)
 
 	// allow configuration to come from environment (which is loaded via .env file)
@@ -52,7 +53,7 @@ func main() {
 	defer shutdownQueue()
 
 	// setup webserver
-	server := web.NewServer(*bind, repo, gc)
+	server := web.NewServer(*bind, *insertLimit, repo, dbc, gc)
 
 	// start webserver
 	if err := server.Start(); err != nil {

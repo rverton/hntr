@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 )
 
@@ -51,6 +52,8 @@ func (s *Server) AddHostnames(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, nil)
 	}
 
+	// TODO: add overall count to limit max. entries in box
+
 	b, err := io.ReadAll(c.Request().Body)
 	if err != nil {
 		log.Printf("unable to read request body: %v", err)
@@ -65,6 +68,7 @@ func (s *Server) AddHostnames(c echo.Context) error {
 	tags = append(tags, "source:api")
 
 	added := 0
+	batch := &pgx.Batch{}
 
 	for _, line := range strings.Split(string(b), "\n") {
 
@@ -72,19 +76,29 @@ func (s *Server) AddHostnames(c echo.Context) error {
 			continue
 		}
 
-		data := db.CreateHostnameParams{
-			Hostname: line,
-			BoxID:    id,
-			Tags:     tags,
+		if added > s.insertLimit {
+			break
 		}
 
-		err := s.repo.CreateHostname(ctx, data)
-		if err != nil {
-			log.Printf("creating hostname failed: %v", err)
-		} else {
-			added++
-		}
+		batch.Queue(
+			"INSERT INTO hostnames (box_id, hostname, tags) VALUES ($1, $2, $3)",
+			id,
+			line,
+			tags,
+		)
+		added++
+	}
 
+	br := s.dbPool.SendBatch(ctx, batch)
+
+	for i := 0; i < added; i++ {
+		if _, err := br.Exec(); err != nil {
+			log.Printf("error executing batch: %v", err)
+		}
+	}
+
+	if err := br.Close(); err != nil {
+		log.Printf("closing failed: %v", err)
 	}
 
 	return c.JSON(http.StatusOK, map[string]int{

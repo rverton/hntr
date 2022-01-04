@@ -57,7 +57,7 @@ export default function Home() {
       <Layout>
 
         <div className="relative">
-          <div className="h-16 ml-44 flex fixed top-0 left-0 right-0 items-center border-b px-4 bg-white">
+          <div className="h-16 ml-44 flex fixed top-0 left-0 right-0 items-center border-b border-gray-200 px-4 bg-white">
 
             <div className="w-full flex justify-between items-center">
               <div className="flex w-full sm:max-w-md items-center">
@@ -81,7 +81,7 @@ export default function Home() {
                   {hostnames.length} hosts
                   {Object.keys(selected).length > 0 && <span>, {Object.keys(selected).length} selected</span>}
                 </div>}
-                <button onClick={() => setShowModal(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 uppercase tracking-widest text-xs font-semibold border border-transparent shadow-sm font-medium rounded-md text-white bg-orange-800 hover:bg-orange-900 sm:mt-0 sm:ml-3 sm:w-auto">
+                <button onClick={() => setShowModal(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm rounded-md text-white bg-orange-800 hover:bg-orange-900 sm:mt-0 sm:ml-3 sm:w-auto">
                   Import
                 </button>
               </div>
@@ -145,7 +145,7 @@ export default function Home() {
                       </p>
 
                       <div className="font-mono border p-5 text-sm my-3">
-                        <span className="text-gray-400">echo example.com | </span>curl --data-binary @- &quot;{apiUrl}/box/{id}/hostnames?tags=is_scope&quot;
+                        <span className="text-gray-400">echo example.com | </span>curl --data-binary @- &quot;{apiUrl}/box/{id}/hostnames<span className="font-bold">?tags=is_scope,is_wildcard</span>&quot;
                       </div>
                     </div>
                   </div>
@@ -188,16 +188,16 @@ function HostnamesTable({ data, selected, setSelected }) {
         <div
           key={hostname.id}
           className={classNames(
-            "flex px-6 space-x-5 border-b py-1 text-sm bg-gray-50",
+            "flex px-6 space-x-5 border-b border-gray-100 py-1 text-sm bg-gray-50",
             hostname.id in selected ? 'bg-orange-100' : ''
           )}
           onDoubleClick={() => toggleRowSelection(hostname.id)}
         >
-          <div className="text-gray-400 w-32 font-light text-sm">
+          <div className="flex items-center text-gray-400 w-32 font-light font-mono text-xs">
             {format(parseISO(hostname.created_at), 'yy-MM-dd HH:mm:ss')}
           </div>
 
-          <div className="text-green-800 w-1/4">
+          <div className="text-gray-600 w-1/4">
             {hostname.hostname}
           </div>
 
@@ -217,68 +217,10 @@ function HostnamesTable({ data, selected, setSelected }) {
 
       {
         data && !data.length &&
-        <div className="text-center text-bold p-10">No hostnames added. Please use the import function.</div>
+        <div className="text-center text-bold p-10">No hostnames matching criteria. If you have not yet added hosts, please use the import function.</div>
       }
     </div>
 
-  )
-
-  return (
-    <>
-      <table className="mt-8 w-full table-fixed mb-8">
-        <thead>
-          <tr>
-            <th className="w-4/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-l">
-              DNS Name
-            </th>
-            <th className="w-6/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
-              Tags
-            </th>
-            <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-r">
-              Added
-            </th>
-          </tr>
-        </thead>
-
-        {data?.length > 0 &&
-          <tbody>
-            {data.map(hostname =>
-              <tr
-                key={hostname.hostname}
-                onClick={() => toggleRowSelection(hostname.id)}
-                className={hostname.id in selected ? 'bg-green-100' : ''}
-              >
-                <td
-                  className="text-sm px-2 py-1 border-b border-gray-200 border-dashed"
-                >{hostname.hostname}
-                </td>
-                <td className="flex space-x-1 text-sm px-2 py-1 border-b border-gray-200 border-dashed">
-                  {hostname.tags?.map((tag, i) =>
-                    <Tag key={i} name={tag} />
-                  )}
-                  &nbsp;
-                </td>
-                <td className="text-sm py-1 px-2 border-b border-gray-200 border-dashed text-gray-500">
-                  {format(parseISO(hostname.created_at), 'yy-MM-dd HH:mm:ss')}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        }
-
-      </table>
-
-      {
-        !data &&
-        <div className="text-center text-lg text-bold p-3">Loading</div>
-      }
-
-      {
-        data && !data.length &&
-        <div className="text-center text-lg text-bold p-3">No hostnames added. Please use the import function.</div>
-      }
-
-    </>
   )
 }
 

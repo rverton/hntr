@@ -4,7 +4,7 @@ function classNames(...classes) {
 
 export default function Tag({ name, color = 'gray' }) {
   const bgColor = 'bg-gray-200';
-  const fgColor = 'text-gray-800';
+  const fgColor = 'text-gray-600';
 
   if (color == 'blue') {
     bgColor = 'bg-blue-100';

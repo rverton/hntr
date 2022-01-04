@@ -29,10 +29,10 @@ export default function Home() {
 
 
           <div className="flex space-x-2">
-            <button type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 uppercase tracking-widest text-xs font-semibold border border-transparent shadow-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-600 sm:mt-0 sm:ml-3 sm:w-auto">
+            <button type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm border border-gray-300 font-medium rounded-md hover:bg-gray-100 sm:mt-0 sm:ml-3 sm:w-auto">
               Library
             </button>
-            <button type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 uppercase tracking-widest text-xs font-semibold border border-transparent shadow-sm font-medium rounded-md text-white bg-orange-800 hover:bg-orange-900 sm:mt-0 sm:ml-3 sm:w-auto">
+            <button type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm rounded-md text-white bg-orange-800 hover:bg-orange-900 sm:mt-0 sm:ml-3 sm:w-auto">
               Add
             </button>
           </div>
@@ -70,7 +70,7 @@ function Automation({ automation }) {
             <div className="min-w-0 flex-1 flex items-center">
               <div className="min-w-0 flex-1 px-4 md:grid md:grid-cols-3 md:gap-4">
                 <div>
-                  <p className="text-sm font-medium text-indigo-600 truncate">{automation.name}</p>
+                  <p className="text-sm font-medium text-orange-800 truncate">{automation.name}</p>
                   <p className="mt-2 flex flex-col text-sm text-gray-500">
                     <span className="truncate">{automation.command}</span>
                   </p>
@@ -82,7 +82,7 @@ function Automation({ automation }) {
                     </p>
                     <div className="mt-2 flex items-center text-sm text-gray-500">
                       <div>
-                        {automation.source_tags.map(t => <Tag key={t} name={t} color="blue" />)}
+                        {automation.source_tags.map(t => <Tag key={t} name={t} />)}
                         {automation.source_tags.length == 0 && <div>All tags</div>}
                       </div>
                     </div>

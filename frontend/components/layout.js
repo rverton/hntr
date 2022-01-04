@@ -11,6 +11,7 @@ function classNames(...classes) {
 const defaultNavigation = [
   { name: 'Hostnames', href: '/hostnames/', current: false },
   { name: 'URLs', href: '/urls/', current: false },
+  { name: 'Alerts', href: '/urls/', current: false },
   { name: 'Automations', href: '/automations/', current: false },
 ]
 
@@ -39,8 +40,8 @@ export default function Layout({ children }) {
 
     <div className="h-screen flex">
 
-      <div className="h-screen flex flex-col fixed w-44 border-r">
-        <div className="h-16 flex p-4 border-b font-medium text-sm items-center text-orange-800">{box.name}</div>
+      <div className="h-screen flex flex-col fixed w-44 border-r border-gray-200">
+        <div className="h-16 flex p-4 border-b border-gray-200 font-medium text-sm items-center text-orange-800">{box.name}</div>
         <div className="grow">
           <div className="flex flex-col space-y-2 m-2">
             {navigation.map((item) => (

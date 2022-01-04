@@ -72,7 +72,7 @@ func MustSetupTest(tb testing.TB) (*echo.Echo, *db.Queries, *pgxpool.Pool) {
 	defer shutdownQueue()
 
 	// setup web server
-	server := NewServer(":0", repo, gc).Server()
+	server := NewServer(":0", 1000, repo, repoDbc, gc).Server()
 
 	return server, repo, repoDbc
 }
