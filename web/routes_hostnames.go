@@ -65,7 +65,12 @@ func (s *Server) AddHostnames(c echo.Context) error {
 		return c == ','
 	})
 
-	tags = append(tags, "source:api")
+	source := c.QueryParam("source")
+	if source == "" {
+		source = "api"
+	}
+
+	tags = append(tags, "source:"+source)
 
 	added := 0
 	batch := &pgx.Batch{}
@@ -76,7 +81,7 @@ func (s *Server) AddHostnames(c echo.Context) error {
 			continue
 		}
 
-		if added > s.insertLimit {
+		if added > s.insertLimit-1 {
 			break
 		}
 
@@ -91,18 +96,22 @@ func (s *Server) AddHostnames(c echo.Context) error {
 
 	br := s.dbPool.SendBatch(ctx, batch)
 
+	var affected int64
 	for i := 0; i < added; i++ {
-		if _, err := br.Exec(); err != nil {
+		ct, err := br.Exec()
+		if err != nil {
 			log.Printf("error executing batch: %v", err)
 		}
+
+		affected += ct.RowsAffected()
 	}
 
 	if err := br.Close(); err != nil {
 		log.Printf("closing failed: %v", err)
 	}
 
-	return c.JSON(http.StatusOK, map[string]int{
-		"added": added,
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"added": affected,
 	})
 }
 

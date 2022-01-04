@@ -22,3 +22,5 @@ CREATE TABLE hostnames (
       FOREIGN KEY(box_id) 
 	    REFERENCES boxes(id)
 );
+
+CREATE INDEX idx_hostnames_box ON hostnames(box_id);
