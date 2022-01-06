@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -31,6 +32,33 @@ type Server struct {
 	insertLimit int
 }
 
+type CustomValidator struct {
+	validator *validator.Validate
+}
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	if err := cv.validator.Struct(i); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func validationErrorMsg(fe validator.FieldError) string {
+	switch fe.Tag() {
+	case "required":
+		return "This field is required"
+	case "email":
+		return "Invalid email"
+	case "min":
+		return "Invalid minimum length"
+
+	case "max":
+		return "Invalid maximum length"
+	}
+	return fe.Error() // default error
+}
+
 func NewServer(addr string, insertLimit int, repo *db.Queries, dbPool *pgxpool.Pool, gc *gue.Client) *Server {
 	debugMode := os.Getenv("DEBUG") != ""
 
@@ -42,6 +70,7 @@ func NewServer(addr string, insertLimit int, repo *db.Queries, dbPool *pgxpool.P
 	}
 
 	e := echo.New()
+	e.Validator = &CustomValidator{validator: validator.New()}
 	e.HideBanner = true
 
 	// Middleware
@@ -56,7 +85,7 @@ func NewServer(addr string, insertLimit int, repo *db.Queries, dbPool *pgxpool.P
 	// boxes
 	e.GET("/api/box/:id", server.GetBox)
 	e.POST("/api/box/create", server.CreateBox)
-	e.POST("/api/box/:id/containers", server.AddContainer)
+	e.PUT("/api/box/:id", server.UpdateBox)
 
 	// records
 	e.GET("/api/box/:id/:container", server.ListRecords)

@@ -14,7 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const LIMIT_MAX = 50000
+const LIMIT_MAX = 25000
 
 func (s *Server) ListRecords(c echo.Context) error {
 	ctx := context.Background()
@@ -25,16 +25,13 @@ func (s *Server) ListRecords(c echo.Context) error {
 	}
 
 	container := c.Param("container")
-
 	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	offset, _ := strconv.Atoi(c.QueryParam("offset"))
+	searchword, tags := parseTerm(c.QueryParam("term"))
+
 	if limit < 1 || limit > LIMIT_MAX {
 		limit = 500
 	}
-
-	// term
-	term := c.QueryParam("term")
-
-	searchword, tags := parseTerm(term)
 
 	params := db.ListRecordsByBoxFilterPaginatedParams{
 		BoxID:     id,
@@ -42,7 +39,7 @@ func (s *Server) ListRecords(c echo.Context) error {
 		Data:      "%" + searchword + "%",
 		Column3:   tags,
 		Limit:     int32(limit),
-		Offset:    0,
+		Offset:    int32(offset),
 	}
 
 	paramsCount := db.CountRecordsByBoxFilterParams{

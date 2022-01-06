@@ -21,22 +21,19 @@ export default function Layout({ children }) {
   const { box, isLoading, isError, mutate } = useBox(id)
 
   const handleUpdateBox = (shouldChangeName) => {
+    let updateValues = { name: box.name, containers: box.containers }
     if (shouldChangeName) {
-      box.name = prompt('Please choose a new name:')
+      updateValues.name = prompt('Please choose a new name:')
 
-      console.log(box.name)
-      if (!box.name) return;
+      if (!updateValues.name) return;
     } else {
       let newName = prompt('Please choose a container name:')
       if (!newName) return;
 
-      box.containers = [...box.containers, newName]
+      updateValues.containers = [...updateValues.containers, newName]
     }
 
-    api.post(`/box/${id}/containers`, {
-      name: box.name,
-      containers: box.containers
-    })
+    api.put(`/box/${id}`, updateValues)
       .then(() => {
         mutate()
       })

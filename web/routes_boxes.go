@@ -2,10 +2,13 @@ package web
 
 import (
 	"context"
+	"fmt"
 	"hntr/db"
 	"log"
 	"net/http"
+	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
@@ -49,7 +52,7 @@ func (s *Server) CreateBox(c echo.Context) error {
 	return c.JSON(http.StatusOK, box)
 }
 
-func (s *Server) AddContainer(c echo.Context) error {
+func (s *Server) UpdateBox(c echo.Context) error {
 	ctx := context.Background()
 
 	id, err := uuid.Parse(c.Param("id"))
@@ -68,8 +71,8 @@ func (s *Server) AddContainer(c echo.Context) error {
 	}
 
 	type UpdateBox struct {
-		Name       string   `json:"name"`
-		Containers []string `json:"containers"`
+		Name       string   `json:"name" validate:"required,min=2,max=25"`
+		Containers []string `json:"containers" validate:"required,min=1,max=5,dive,min=2,max=25"`
 	}
 
 	boxNew := new(UpdateBox)
@@ -79,12 +82,25 @@ func (s *Server) AddContainer(c echo.Context) error {
 		})
 	}
 
-	// TODO: add validation
+	if err = c.Validate(boxNew); err != nil {
+		errors := err.(validator.ValidationErrors)
+
+		firstError := errors[0]
+
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": fmt.Sprintf("%s: %s", firstError.Field(), validationErrorMsg(firstError)),
+		})
+	}
+
+	var containersLower []string
+	for _, c := range boxNew.Containers {
+		containersLower = append(containersLower, strings.ToLower(c))
+	}
 
 	if err = s.repo.UpdateBox(ctx, db.UpdateBoxParams{
 		ID:         box.ID,
 		Name:       boxNew.Name,
-		Containers: boxNew.Containers,
+		Containers: containersLower,
 	}); err != nil {
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
