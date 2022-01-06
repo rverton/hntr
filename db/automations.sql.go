@@ -11,20 +11,20 @@ import (
 
 const createAutomation = `-- name: CreateAutomation :one
 INSERT INTO automations (
-    name, description, box_id, command, source_table, source_tags, destination_table, destination_tags, is_public
-) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, name, description, box_id, command, source_table, source_tags, destination_table, destination_tags, is_public, created_at
+    name, description, box_id, command, source_container, source_tags, destination_container, destination_tags, is_public
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, name, description, box_id, command, source_container, source_tags, destination_container, destination_tags, is_public, created_at
 `
 
 type CreateAutomationParams struct {
-	Name             string    `json:"name"`
-	Description      string    `json:"description"`
-	BoxID            uuid.UUID `json:"box_id"`
-	Command          string    `json:"command"`
-	SourceTable      string    `json:"source_table"`
-	SourceTags       []string  `json:"source_tags"`
-	DestinationTable string    `json:"destination_table"`
-	DestinationTags  []string  `json:"destination_tags"`
-	IsPublic         bool      `json:"is_public"`
+	Name                 string    `json:"name"`
+	Description          string    `json:"description"`
+	BoxID                uuid.UUID `json:"box_id"`
+	Command              string    `json:"command"`
+	SourceContainer      string    `json:"source_container"`
+	SourceTags           []string  `json:"source_tags"`
+	DestinationContainer string    `json:"destination_container"`
+	DestinationTags      []string  `json:"destination_tags"`
+	IsPublic             bool      `json:"is_public"`
 }
 
 func (q *Queries) CreateAutomation(ctx context.Context, arg CreateAutomationParams) (Automation, error) {
@@ -33,9 +33,9 @@ func (q *Queries) CreateAutomation(ctx context.Context, arg CreateAutomationPara
 		arg.Description,
 		arg.BoxID,
 		arg.Command,
-		arg.SourceTable,
+		arg.SourceContainer,
 		arg.SourceTags,
-		arg.DestinationTable,
+		arg.DestinationContainer,
 		arg.DestinationTags,
 		arg.IsPublic,
 	)
@@ -46,9 +46,9 @@ func (q *Queries) CreateAutomation(ctx context.Context, arg CreateAutomationPara
 		&i.Description,
 		&i.BoxID,
 		&i.Command,
-		&i.SourceTable,
+		&i.SourceContainer,
 		&i.SourceTags,
-		&i.DestinationTable,
+		&i.DestinationContainer,
 		&i.DestinationTags,
 		&i.IsPublic,
 		&i.CreatedAt,
@@ -93,7 +93,7 @@ func (q *Queries) CreateAutomationEvent(ctx context.Context, arg CreateAutomatio
 }
 
 const getAutomation = `-- name: GetAutomation :one
-SELECT id, name, description, box_id, command, source_table, source_tags, destination_table, destination_tags, is_public, created_at FROM automations WHERE id = $1 LIMIT 1
+SELECT id, name, description, box_id, command, source_container, source_tags, destination_container, destination_tags, is_public, created_at FROM automations WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error) {
@@ -105,9 +105,9 @@ func (q *Queries) GetAutomation(ctx context.Context, id uuid.UUID) (Automation, 
 		&i.Description,
 		&i.BoxID,
 		&i.Command,
-		&i.SourceTable,
+		&i.SourceContainer,
 		&i.SourceTags,
-		&i.DestinationTable,
+		&i.DestinationContainer,
 		&i.DestinationTags,
 		&i.IsPublic,
 		&i.CreatedAt,
@@ -150,21 +150,21 @@ func (q *Queries) ListAutomationEvents(ctx context.Context, automationID uuid.UU
 
 const listAutomationLibrary = `-- name: ListAutomationLibrary :many
 SELECT 
-    id, name, description, command, source_table, source_tags, destination_table, destination_tags, is_public
+    id, name, description, command, source_container, source_tags, destination_container, destination_tags, is_public
 FROM automations
 WHERE is_public = true
 `
 
 type ListAutomationLibraryRow struct {
-	ID               uuid.UUID `json:"id"`
-	Name             string    `json:"name"`
-	Description      string    `json:"description"`
-	Command          string    `json:"command"`
-	SourceTable      string    `json:"source_table"`
-	SourceTags       []string  `json:"source_tags"`
-	DestinationTable string    `json:"destination_table"`
-	DestinationTags  []string  `json:"destination_tags"`
-	IsPublic         bool      `json:"is_public"`
+	ID                   uuid.UUID `json:"id"`
+	Name                 string    `json:"name"`
+	Description          string    `json:"description"`
+	Command              string    `json:"command"`
+	SourceContainer      string    `json:"source_container"`
+	SourceTags           []string  `json:"source_tags"`
+	DestinationContainer string    `json:"destination_container"`
+	DestinationTags      []string  `json:"destination_tags"`
+	IsPublic             bool      `json:"is_public"`
 }
 
 func (q *Queries) ListAutomationLibrary(ctx context.Context) ([]ListAutomationLibraryRow, error) {
@@ -181,9 +181,9 @@ func (q *Queries) ListAutomationLibrary(ctx context.Context) ([]ListAutomationLi
 			&i.Name,
 			&i.Description,
 			&i.Command,
-			&i.SourceTable,
+			&i.SourceContainer,
 			&i.SourceTags,
-			&i.DestinationTable,
+			&i.DestinationContainer,
 			&i.DestinationTags,
 			&i.IsPublic,
 		); err != nil {
@@ -198,7 +198,7 @@ func (q *Queries) ListAutomationLibrary(ctx context.Context) ([]ListAutomationLi
 }
 
 const listAutomations = `-- name: ListAutomations :many
-SELECT id, name, description, box_id, command, source_table, source_tags, destination_table, destination_tags, is_public, created_at FROM automations WHERE box_id = $1
+SELECT id, name, description, box_id, command, source_container, source_tags, destination_container, destination_tags, is_public, created_at FROM automations WHERE box_id = $1
 `
 
 func (q *Queries) ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Automation, error) {
@@ -216,9 +216,9 @@ func (q *Queries) ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Autom
 			&i.Description,
 			&i.BoxID,
 			&i.Command,
-			&i.SourceTable,
+			&i.SourceContainer,
 			&i.SourceTags,
-			&i.DestinationTable,
+			&i.DestinationContainer,
 			&i.DestinationTags,
 			&i.IsPublic,
 			&i.CreatedAt,

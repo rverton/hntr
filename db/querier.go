@@ -9,22 +9,22 @@ import (
 )
 
 type Querier interface {
-	CountHostnamesByBoxFilter(ctx context.Context, arg CountHostnamesByBoxFilterParams) (int64, error)
+	CountRecordsByBoxFilter(ctx context.Context, arg CountRecordsByBoxFilterParams) (int64, error)
 	CreateAutomation(ctx context.Context, arg CreateAutomationParams) (Automation, error)
 	CreateAutomationEvent(ctx context.Context, arg CreateAutomationEventParams) (AutomationEvent, error)
-	CreateBox(ctx context.Context, name string) (Box, error)
-	CreateHostname(ctx context.Context, arg CreateHostnameParams) error
+	CreateBox(ctx context.Context, arg CreateBoxParams) (Box, error)
+	CreateRecord(ctx context.Context, arg CreateRecordParams) error
 	GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error)
 	GetBox(ctx context.Context, id uuid.UUID) (Box, error)
 	ListAutomationEvents(ctx context.Context, automationID uuid.UUID) ([]AutomationEvent, error)
 	ListAutomationLibrary(ctx context.Context) ([]ListAutomationLibraryRow, error)
 	ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Automation, error)
 	ListBoxes(ctx context.Context) ([]Box, error)
-	ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Hostname, error)
-	ListHostnamesByBoxFilter(ctx context.Context, arg ListHostnamesByBoxFilterParams) ([]Hostname, error)
-	ListHostnamesByBoxFilterPaginated(ctx context.Context, arg ListHostnamesByBoxFilterPaginatedParams) ([]Hostname, error)
+	ListRecordsByBoxFilter(ctx context.Context, arg ListRecordsByBoxFilterParams) ([]Record, error)
+	ListRecordsByBoxFilterPaginated(ctx context.Context, arg ListRecordsByBoxFilterPaginatedParams) ([]Record, error)
 	UpdateAutomationEventStatusFinished(ctx context.Context, id uuid.UUID) error
 	UpdateAutomationEventStatusStarted(ctx context.Context, id uuid.UUID) error
+	UpdateBox(ctx context.Context, arg UpdateBoxParams) error
 }
 
 var _ Querier = (*Queries)(nil)

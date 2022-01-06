@@ -6,11 +6,12 @@ const fetcher = (url) => fetch(url).then((res) => {
 })
 
 export default function useBox(id) {
-  const { data, error } = useSWR(id ? `/api/box/${id}` : null, fetcher)
+  const { data, error, mutate } = useSWR(id ? `/api/box/${id}` : null, fetcher)
 
   return {
     box: data,
     isLoading: !error && !data,
-    isError: error
+    isError: error,
+    mutate
   }
 }

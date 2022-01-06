@@ -9,7 +9,7 @@ export default function Index() {
   const createBox = () => {
     api.post('/box/create')
       .then(resp => {
-        router.push('/hostnames/?id=' + resp.data.id)
+        router.push(`/records/?id=${resp.data.id}&container=hostnames`)
       })
       .catch(err => {
         console.error(err);
@@ -52,7 +52,8 @@ export default function Index() {
             Collaborative workspaces for security tester.
           </h1>
           <h2 className="text-gray-600 text-xl text-center">
-            Gather recon data (together) and connect your own automation worker.
+            Create a box and start importing target data via your favourite tools over curl. Add tags and run
+            automations on lists of tagged entries.
           </h2>
           <div className="grid gap-8 items-start justify-center">
             <div className="relative group">

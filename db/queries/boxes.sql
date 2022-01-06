@@ -2,7 +2,14 @@
 SELECT * FROM boxes;
 
 -- name: GetBox :one
-SELECT * FROM boxes WHERE id = $1;
+SELECT * FROM boxes WHERE id = $1 LIMIT 1;
 
 -- name: CreateBox :one
-INSERT INTO boxes (name) VALUES ($1) RETURNING *;
+INSERT INTO boxes (name, containers) VALUES ($1, $2) RETURNING *;
+
+-- name: UpdateBox :exec
+UPDATE boxes SET
+    name=$1, containers=$2
+WHERE
+    id=$3
+RETURNING *;

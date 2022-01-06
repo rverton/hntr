@@ -9,7 +9,7 @@ import Layout from '../../components/layout'
 import Tag from '../../components/tagBadge'
 import LimitSelect from '../../components/limitSelect'
 
-import useHostnames from '../../hooks/useHostnames'
+import useRecords from '../../hooks/useRecords'
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
@@ -21,23 +21,23 @@ const LIMIT = 500
 
 export default function Home() {
   const router = useRouter()
-  const { id } = router.query
+  const { id, container } = router.query
 
   const [showModal, setShowModal] = useState(false)
   const [filterInput, setFilterInput] = useState("")
   const [selected, setSelected] = useState({})
   const [filter, setFilter] = useState("")
   const [limit, setLimit] = useState(LIMIT)
-  const { hostnames, count, isLoading, isError } = useHostnames(id, filter, limit)
+  const { records, count, isLoading, isError } = useRecords(id, container, filter, limit)
 
   const tableMemo = useMemo(() => {
-    return <HostnamesTable
-      data={hostnames}
+    return <RecordsTable
+      data={records}
       isLoading={isLoading}
       selected={selected}
       setSelected={setSelected}
     />;
-  }, [hostnames, isLoading, selected])
+  }, [records, isLoading, selected])
 
   function handleSubmit(e) {
     if (e.key == 'Enter') {
@@ -59,14 +59,14 @@ export default function Home() {
           <div className="h-16 ml-44 flex fixed top-0 left-0 right-0 items-center border-b border-gray-200 px-4 bg-white">
 
             <div className="w-full flex justify-between items-center">
-              <div className="flex w-full sm:max-w-md items-center">
+              <div className="flex w-1/2 items-center">
                 <input
                   minLength={2}
                   autoFocus
                   type="text"
                   name="filter"
                   id="filter"
-                  className="focus:ring-0 focus:border-0 block w-7/12 text-sm text-gray-600 border-0"
+                  className="focus:ring-0 focus:border-0 block w-full text-sm text-gray-600 border-0"
                   placeholder="Filter: foo.com tag:is_scope"
                   autoComplete=""
                   value={filterInput}
@@ -75,7 +75,7 @@ export default function Home() {
                 />
               </div>
               <div className="flex items-center">
-                {hostnames && <div className="pl-4 text-sm">
+                {records && <div className="pl-4 text-sm">
                   {numberFormat(count)} hosts
                   {Object.keys(selected).length > 0 && <span>, {Object.keys(selected).length} selected</span>}
                 </div>}
@@ -92,19 +92,18 @@ export default function Home() {
         </div>
 
         <div className="pt-16">
-          {isError && <div className="text-red-500">Error loading hostnames.</div>}
+          {isError && <div className="text-red-500">Error loading {container}.</div>}
           {!isError && tableMemo}
         </div>
 
       </Layout>
 
-      <HostnamesImportModal showModal={showModal} setShowModal={setShowModal} id={id} />
-
+      <RecordsImportModal showModal={showModal} setShowModal={setShowModal} id={id} container={container} />
     </>
   )
 }
 
-function HostnamesTable({ data, selected, setSelected }) {
+function RecordsTable({ data, selected, setSelected }) {
   const toggleRowSelection = (guid) => {
     let copy = Object.assign({}, selected)
 
@@ -119,25 +118,25 @@ function HostnamesTable({ data, selected, setSelected }) {
 
   return (
     <div className="flex flex-col text-gray-500">
-      {data?.length > 0 && data.map(hostname => (
+      {data?.length > 0 && data.map(record => (
         <div
-          key={hostname.hostname}
+          key={record.data}
           className={classNames(
             "flex px-6 space-x-5 border-b border-gray-100 py-1 text-sm bg-gray-50",
-            hostname.id in selected ? 'bg-orange-100' : ''
+            record.data in selected ? 'bg-orange-100' : ''
           )}
-          onDoubleClick={() => toggleRowSelection(hostname.id)}
+          onDoubleClick={() => toggleRowSelection(record.data)}
         >
           <div className="flex items-center text-gray-400 w-32 font-light font-mono text-xs">
-            {format(parseISO(hostname.created_at), 'yy-MM-dd HH:mm:ss')}
+            {format(parseISO(record.created_at), 'yy-MM-dd HH:mm:ss')}
           </div>
 
-          <div className="text-gray-600 w-1/4">
-            {hostname.hostname}
+          <div className="text-gray-600 w-1/4 truncate">
+            {record.data}
           </div>
 
           <div className="flex space-x-1 text-sm">
-            {hostname.tags?.map((tag, i) =>
+            {record.tags?.map((tag, i) =>
               <Tag key={i} name={tag} />
             )}
             &nbsp;
@@ -152,14 +151,14 @@ function HostnamesTable({ data, selected, setSelected }) {
 
       {
         data && !data.length &&
-        <div className="text-center text-bold p-10">No hostnames matching criteria. If you have not yet added hosts, please use the import function.</div>
+        <div className="text-center text-bold p-10">No records matching criteria. If you have not yet added data, please use the import function.</div>
       }
     </div>
 
   )
 }
 
-function HostnamesImportModal({ showModal, setShowModal, id }) {
+function RecordsImportModal({ showModal, setShowModal, id, container }) {
   const cancelButtonRef = useRef(null)
   return (
     <Transition.Root show={showModal} as={Fragment}>
@@ -194,15 +193,15 @@ function HostnamesImportModal({ showModal, setShowModal, id }) {
               <div className="sm:flex sm:items-start">
                 <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                   <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                    Import Hostnames
+                    Import {container}
                   </Dialog.Title>
                   <div className="mt-2">
                     <p className="text-sm text-gray-500">
-                      You can use the following command to pipe hostnames directly into your box:
+                      You can use the following command to pipe {container} directly into your box:
                     </p>
 
                     <div className="font-mono border p-5 text-sm my-3">
-                      <span className="text-gray-400">cat hostnames.txt | </span><span id="curl">curl --data-binary @- &quot;{apiUrl}/box/{id}/hostnames&quot;</span>
+                      <span className="text-gray-400">cat {container}.txt | </span><span id="curl">curl --data-binary @- &quot;{apiUrl}/box/{id}/{container}&quot;</span>
                     </div>
 
                     <p className="text-sm text-gray-500">
@@ -210,7 +209,7 @@ function HostnamesImportModal({ showModal, setShowModal, id }) {
                     </p>
 
                     <div className="font-mono border p-5 text-sm my-3">
-                      <span className="text-gray-400">echo example.com | </span>curl --data-binary @- &quot;{apiUrl}/box/{id}/hostnames<span className="font-bold">?tags=is_scope,is_wildcard</span>&quot;
+                      <span className="text-gray-400">echo example.com | </span>curl --data-binary @- &quot;{apiUrl}/box/{id}/{container}<span className="font-bold">?tags=is_scope,is_wildcard</span>&quot;
                     </div>
                   </div>
                 </div>

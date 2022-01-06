@@ -11,17 +11,17 @@ import (
 )
 
 type Automation struct {
-	ID               uuid.UUID `json:"id"`
-	Name             string    `json:"name"`
-	Description      string    `json:"description"`
-	BoxID            uuid.UUID `json:"box_id"`
-	Command          string    `json:"command"`
-	SourceTable      string    `json:"source_table"`
-	SourceTags       []string  `json:"source_tags"`
-	DestinationTable string    `json:"destination_table"`
-	DestinationTags  []string  `json:"destination_tags"`
-	IsPublic         bool      `json:"is_public"`
-	CreatedAt        time.Time `json:"created_at"`
+	ID                   uuid.UUID `json:"id"`
+	Name                 string    `json:"name"`
+	Description          string    `json:"description"`
+	BoxID                uuid.UUID `json:"box_id"`
+	Command              string    `json:"command"`
+	SourceContainer      string    `json:"source_container"`
+	SourceTags           []string  `json:"source_tags"`
+	DestinationContainer string    `json:"destination_container"`
+	DestinationTags      []string  `json:"destination_tags"`
+	IsPublic             bool      `json:"is_public"`
+	CreatedAt            time.Time `json:"created_at"`
 }
 
 type AutomationEvent struct {
@@ -36,9 +36,10 @@ type AutomationEvent struct {
 }
 
 type Box struct {
-	ID        uuid.UUID `json:"id"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
+	ID         uuid.UUID `json:"id"`
+	Name       string    `json:"name"`
+	Containers []string  `json:"containers"`
+	CreatedAt  time.Time `json:"created_at"`
 }
 
 type GueFinishedJob struct {
@@ -66,9 +67,10 @@ type GueJob struct {
 	UpdatedAt  time.Time      `json:"updated_at"`
 }
 
-type Hostname struct {
-	Hostname  string    `json:"hostname"`
-	BoxID     uuid.UUID `json:"box_id"`
+type Record struct {
+	Data      string    `json:"data"`
 	Tags      []string  `json:"tags"`
+	BoxID     uuid.UUID `json:"box_id"`
+	Container string    `json:"container"`
 	CreatedAt time.Time `json:"created_at"`
 }

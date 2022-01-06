@@ -31,6 +31,8 @@ func (s *Server) ListAutomations(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, nil)
 	}
 
+	container := c.Param("container")
+
 	automations, err := s.repo.ListAutomations(ctx, id)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("listing automations failed: %v", err)
@@ -40,13 +42,14 @@ func (s *Server) ListAutomations(c echo.Context) error {
 	automationCounts := []AutomationHostnameCount{}
 
 	for _, automation := range automations {
-		params := db.CountHostnamesByBoxFilterParams{
-			BoxID:    automation.BoxID,
-			Hostname: "%%",
-			Column3:  automation.SourceTags,
+		params := db.CountRecordsByBoxFilterParams{
+			BoxID:     automation.BoxID,
+			Container: container,
+			Data:      "%%",
+			Column3:   automation.SourceTags,
 		}
 
-		count, _ := s.repo.CountHostnamesByBoxFilter(ctx, params)
+		count, _ := s.repo.CountRecordsByBoxFilter(ctx, params)
 
 		a := AutomationHostnameCount{
 			Automation:  automation,
@@ -106,29 +109,29 @@ func (s *Server) StartAutomation(c echo.Context) error {
 
 func createAndEnqueue(ctx context.Context, automation db.Automation, repo *db.Queries, queue *gue.Client) error {
 
-	// TODO: switch source between hostname/URL based on automation.source_table
-	// TODO: switch target between hostname/URL based on automation.target_table
+	// TODO: check if containers exist before enqueing
 
 	// get all entries matching automation.source_table and automation.source_tags
-	params := db.ListHostnamesByBoxFilterParams{
-		BoxID:    automation.BoxID,
-		Hostname: "%%",
-		Column3:  automation.SourceTags,
+	params := db.ListRecordsByBoxFilterParams{
+		BoxID:     automation.BoxID,
+		Container: automation.SourceContainer,
+		Data:      "%%",
+		Column3:   automation.SourceTags,
 	}
 
-	hostnames, err := repo.ListHostnamesByBoxFilter(ctx, params)
+	records, err := repo.ListRecordsByBoxFilter(ctx, params)
 	if err != nil && err != pgx.ErrNoRows {
-		return fmt.Errorf("getting hostnames failed: %v", err)
+		return fmt.Errorf("getting records failed: %v", err)
 	}
 
 	// create and enqueue job for each entry
-	for _, hostname := range hostnames {
+	for _, record := range records {
 
 		ae, err := repo.CreateAutomationEvent(ctx, db.CreateAutomationEventParams{
 			BoxID:        automation.BoxID,
 			AutomationID: automation.ID,
 			Status:       "pending",
-			Data:         hostname.Hostname,
+			Data:         record.Data,
 		})
 		if err != nil {
 			return fmt.Errorf("error creating automation event: %v", err)
@@ -138,7 +141,7 @@ func createAndEnqueue(ctx context.Context, automation db.Automation, repo *db.Qu
 		args, err := json.Marshal(jobs.RunAutomationArgs{
 			JobID:      ae.ID,
 			Automation: automation,
-			Data:       hostname.Hostname,
+			Data:       record.Data,
 		})
 		if err != nil {
 			return fmt.Errorf("error marshaling job: %v", err)
@@ -194,15 +197,7 @@ func (s *Server) AddAutomation(c echo.Context) error {
 		})
 	}
 
-	allowedSources := []string{"hostnames"}
-	allowedDestinations := []string{"hostnames"}
-
-	if !inStringSlice(automation.SourceTable, allowedSources) ||
-		!inStringSlice(automation.DestinationTable, allowedDestinations) {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "source or destination table not allowed",
-		})
-	}
+	// TODO: check if container exists
 
 	if len(automation.SourceTags) > TAGS_MAX || len(automation.DestinationTags) > TAGS_MAX {
 		return c.JSON(http.StatusBadRequest, map[string]string{
@@ -211,14 +206,14 @@ func (s *Server) AddAutomation(c echo.Context) error {
 	}
 
 	automationCreated, err := s.repo.CreateAutomation(ctx, db.CreateAutomationParams{
-		BoxID:            box.ID,
-		Name:             automation.Name,
-		Description:      automation.Description,
-		Command:          automation.Command,
-		SourceTable:      automation.SourceTable,
-		SourceTags:       automation.SourceTags,
-		DestinationTable: automation.DestinationTable,
-		DestinationTags:  automation.DestinationTags,
+		BoxID:                box.ID,
+		Name:                 automation.Name,
+		Description:          automation.Description,
+		Command:              automation.Command,
+		SourceContainer:      automation.SourceContainer,
+		SourceTags:           automation.SourceTags,
+		DestinationContainer: automation.DestinationContainer,
+		DestinationTags:      automation.DestinationTags,
 	})
 	if err != nil {
 		log.Printf("error creating automation: %v", err)

@@ -3,7 +3,7 @@ SELECT * FROM automations WHERE box_id = $1;
 
 -- name: ListAutomationLibrary :many
 SELECT 
-    id, name, description, command, source_table, source_tags, destination_table, destination_tags, is_public
+    id, name, description, command, source_container, source_tags, destination_container, destination_tags, is_public
 FROM automations
 WHERE is_public = true;
 
@@ -26,5 +26,5 @@ SELECT * FROM automation_events WHERE automation_id = $1 ORDER BY created_at DES
 
 -- name: CreateAutomation :one
 INSERT INTO automations (
-    name, description, box_id, command, source_table, source_tags, destination_table, destination_tags, is_public
+    name, description, box_id, command, source_container, source_tags, destination_container, destination_tags, is_public
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;

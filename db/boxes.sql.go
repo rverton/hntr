@@ -10,29 +10,44 @@ import (
 )
 
 const createBox = `-- name: CreateBox :one
-INSERT INTO boxes (name) VALUES ($1) RETURNING id, name, created_at
+INSERT INTO boxes (name, containers) VALUES ($1, $2) RETURNING id, name, containers, created_at
 `
 
-func (q *Queries) CreateBox(ctx context.Context, name string) (Box, error) {
-	row := q.db.QueryRow(ctx, createBox, name)
+type CreateBoxParams struct {
+	Name       string   `json:"name"`
+	Containers []string `json:"containers"`
+}
+
+func (q *Queries) CreateBox(ctx context.Context, arg CreateBoxParams) (Box, error) {
+	row := q.db.QueryRow(ctx, createBox, arg.Name, arg.Containers)
 	var i Box
-	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Containers,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
 const getBox = `-- name: GetBox :one
-SELECT id, name, created_at FROM boxes WHERE id = $1
+SELECT id, name, containers, created_at FROM boxes WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetBox(ctx context.Context, id uuid.UUID) (Box, error) {
 	row := q.db.QueryRow(ctx, getBox, id)
 	var i Box
-	err := row.Scan(&i.ID, &i.Name, &i.CreatedAt)
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Containers,
+		&i.CreatedAt,
+	)
 	return i, err
 }
 
 const listBoxes = `-- name: ListBoxes :many
-SELECT id, name, created_at FROM boxes
+SELECT id, name, containers, created_at FROM boxes
 `
 
 func (q *Queries) ListBoxes(ctx context.Context) ([]Box, error) {
@@ -44,7 +59,12 @@ func (q *Queries) ListBoxes(ctx context.Context) ([]Box, error) {
 	items := []Box{}
 	for rows.Next() {
 		var i Box
-		if err := rows.Scan(&i.ID, &i.Name, &i.CreatedAt); err != nil {
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Containers,
+			&i.CreatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
@@ -53,4 +73,23 @@ func (q *Queries) ListBoxes(ctx context.Context) ([]Box, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateBox = `-- name: UpdateBox :exec
+UPDATE boxes SET
+    name=$1, containers=$2
+WHERE
+    id=$3
+RETURNING id, name, containers, created_at
+`
+
+type UpdateBoxParams struct {
+	Name       string    `json:"name"`
+	Containers []string  `json:"containers"`
+	ID         uuid.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateBox(ctx context.Context, arg UpdateBoxParams) error {
+	_, err := q.db.Exec(ctx, updateBox, arg.Name, arg.Containers, arg.ID)
+	return err
 }

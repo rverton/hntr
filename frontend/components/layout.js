@@ -1,34 +1,49 @@
-import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 
 import useBox from '../hooks/useBox'
 
+import api from '../lib/api'
+
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-const defaultNavigation = [
-  { name: 'Hostnames', href: '/hostnames/', current: false },
-  { name: 'URLs', href: '/urls/', current: false },
-  { name: 'Alerts', href: '/urls/', current: false },
-  { name: 'Automations', href: '/automations/', current: false },
-]
+function capitalize(str) {
+  const lower = str.toLowerCase();
+  return str.charAt(0).toUpperCase() + lower.slice(1);
+}
+
 
 export default function Layout({ children }) {
   const router = useRouter()
-  const { id } = router.query
-  const [navigation, setNavigation] = useState(defaultNavigation.slice());
-  const { box, isLoading, isError } = useBox(id)
+  const { id, container } = router.query
+  const { box, isLoading, isError, mutate } = useBox(id)
 
-  // append current box id to every menu element
-  useEffect(() => {
-    const copy = defaultNavigation.map(a => { return { ...a } })
-    setNavigation(copy.map(el => {
-      el.href = `${el.href}?id=${id}`
-      return el
-    }))
-  }, [id])
+  const handleUpdateBox = (shouldChangeName) => {
+    if (shouldChangeName) {
+      box.name = prompt('Please choose a new name:')
+
+      console.log(box.name)
+      if (!box.name) return;
+    } else {
+      let newName = prompt('Please choose a container name:')
+      if (!newName) return;
+
+      box.containers = [...box.containers, newName]
+    }
+
+    api.post(`/box/${id}/containers`, {
+      name: box.name,
+      containers: box.containers
+    })
+      .then(() => {
+        mutate()
+      })
+      .catch(err => {
+        alert(`Could not update box: ${err.response?.data?.error}`)
+      })
+  }
 
   if (isLoading) return <div>Loading</div>
   if (isError) {
@@ -41,22 +56,47 @@ export default function Layout({ children }) {
     <div className="h-screen flex">
 
       <div className="h-screen flex flex-col fixed w-44 border-r border-gray-200">
-        <div className="h-16 flex p-4 border-b border-gray-200 font-medium text-sm items-center text-orange-800">{box.name}</div>
+        <div
+          onClick={() => handleUpdateBox(true)}
+          className="h-16 flex cursor-pointer p-4 border-b border-gray-200 font-medium text-sm items-center text-orange-800">{box.name}</div>
         <div className="grow">
-          <div className="flex flex-col space-y-2 m-2">
-            {navigation.map((item) => (
-              <Link href={item.href} key={item.name}>
+          <div className="flex flex-col space-y-1 m-2">
+
+            <div
+              className={classNames(
+                "flex items-center justify-between font-medium text-gray-600 px-2 py-1 text-sm rounded-sm",
+              )}
+            >
+              <span>
+                Container
+              </span>
+              <button onClick={() => handleUpdateBox(false)}>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </button>
+            </div>
+            {box && box.containers.map((item) => (
+              <Link href={`/records/?id=${id}&container=${item}`} key={item}>
                 <a
                   className={classNames(
-                    "font-medium text-gray-600 px-2 py-1 text-sm hover:bg-gray-100 rounded-sm",
-                    item.current ? "bg-gray-100" : ""
+                    "font-medium text-gray-600 ml-4 px-2 py-1 text-sm hover:bg-gray-100 rounded-sm",
+                    container == item ? 'bg-gray-100' : ''
                   )}
-                  aria-current={item.current ? 'page' : undefined}
                 >
-                  {item.name}
+                  {capitalize(item)}
                 </a>
               </Link>
             ))}
+            <Link href={`/automations/?id=${id}`}>
+              <a
+                className={classNames(
+                  "font-medium text-gray-600 px-2 py-1 text-sm hover:bg-gray-100 rounded-sm",
+                )}
+              >
+                Automations
+              </a>
+            </Link>
           </div>
         </div>
         <div className="flex items-center p-4 text-sm font-medium">

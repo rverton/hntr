@@ -56,10 +56,11 @@ func NewServer(addr string, insertLimit int, repo *db.Queries, dbPool *pgxpool.P
 	// boxes
 	e.GET("/api/box/:id", server.GetBox)
 	e.POST("/api/box/create", server.CreateBox)
+	e.POST("/api/box/:id/containers", server.AddContainer)
 
-	// hostnames
-	e.GET("/api/box/:id/hostnames", server.ListHostnames)
-	e.POST("/api/box/:id/hostnames", server.AddHostnames)
+	// records
+	e.GET("/api/box/:id/:container", server.ListRecords)
+	e.POST("/api/box/:id/:container", server.AddRecords)
 
 	// automations
 	e.GET("/api/box/:id/automations", server.ListAutomations)

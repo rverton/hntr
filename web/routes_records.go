@@ -16,14 +16,15 @@ import (
 
 const LIMIT_MAX = 50000
 
-func (s *Server) ListHostnames(c echo.Context) error {
+func (s *Server) ListRecords(c echo.Context) error {
 	ctx := context.Background()
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		log.Printf("unable to parse id: %v", err)
 		return c.JSON(http.StatusNotFound, nil)
 	}
+
+	container := c.Param("container")
 
 	limit, _ := strconv.Atoi(c.QueryParam("limit"))
 	if limit < 1 || limit > LIMIT_MAX {
@@ -35,39 +36,41 @@ func (s *Server) ListHostnames(c echo.Context) error {
 
 	searchword, tags := parseTerm(term)
 
-	params := db.ListHostnamesByBoxFilterPaginatedParams{
-		BoxID:    id,
-		Hostname: "%" + searchword + "%",
-		Column3:  tags,
-		Limit:    int32(limit),
-		Offset:   0,
+	params := db.ListRecordsByBoxFilterPaginatedParams{
+		BoxID:     id,
+		Container: container,
+		Data:      "%" + searchword + "%",
+		Column3:   tags,
+		Limit:     int32(limit),
+		Offset:    0,
 	}
 
-	paramsCount := db.CountHostnamesByBoxFilterParams{
-		BoxID:    id,
-		Hostname: "%" + searchword + "%",
-		Column3:  tags,
+	paramsCount := db.CountRecordsByBoxFilterParams{
+		BoxID:     id,
+		Container: container,
+		Data:      "%" + searchword + "%",
+		Column3:   tags,
 	}
 
-	hostnames, err := s.repo.ListHostnamesByBoxFilterPaginated(ctx, params)
+	records, err := s.repo.ListRecordsByBoxFilterPaginated(ctx, params)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("listing boxes failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	count, err := s.repo.CountHostnamesByBoxFilter(ctx, paramsCount)
+	count, err := s.repo.CountRecordsByBoxFilter(ctx, paramsCount)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("listing boxes failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"count":     count,
-		"hostnames": hostnames,
+		"count":   count,
+		"records": records,
 	})
 }
 
-func (s *Server) AddHostnames(c echo.Context) error {
+func (s *Server) AddRecords(c echo.Context) error {
 	ctx := context.Background()
 
 	id, err := uuid.Parse(c.Param("id"))
@@ -76,7 +79,10 @@ func (s *Server) AddHostnames(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, nil)
 	}
 
+	container := c.Param("container")
+
 	// TODO: add overall count to limit max. entries in box
+	// TODO: retrieve box and check if box exists!
 
 	b, err := io.ReadAll(c.Request().Body)
 	if err != nil {
@@ -110,8 +116,9 @@ func (s *Server) AddHostnames(c echo.Context) error {
 		}
 
 		batch.Queue(
-			"INSERT INTO hostnames (box_id, hostname, tags) VALUES ($1, $2, $3)",
+			"INSERT INTO records (box_id, container, data, tags) VALUES ($1, $2, $3, $4)",
 			id,
+			container,
 			line,
 			tags,
 		)
