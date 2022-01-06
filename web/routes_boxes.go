@@ -2,12 +2,12 @@ package web
 
 import (
 	"context"
-	"database/sql"
 	"hntr/db"
 	"log"
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 )
 
@@ -22,7 +22,7 @@ func (s *Server) GetBox(c echo.Context) error {
 
 	box, err := s.repo.GetBox(ctx, id)
 
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return c.JSON(http.StatusNotFound, nil)
 	}
 

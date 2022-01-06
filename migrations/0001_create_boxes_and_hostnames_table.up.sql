@@ -8,15 +8,12 @@ CREATE TABLE boxes (
 );
 
 CREATE TABLE hostnames (
-    id          bigserial,
-    hostname    VARCHAR NOT NULL,
+    hostname    VARCHAR(253) NOT NULL,
     box_id      uuid NOT NULL,
-    tags        text[],
+    tags        VARCHAR(50)[],
 
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (id),
-
-    UNIQUE(hostname, box_id),
+    PRIMARY KEY (hostname, box_id),
 
     CONSTRAINT fk_box
       FOREIGN KEY(box_id) 
@@ -24,3 +21,4 @@ CREATE TABLE hostnames (
 );
 
 CREATE INDEX idx_hostnames_box ON hostnames(box_id);
+CREATE INDEX idx_hostnames_hostname ON hostnames(hostname);

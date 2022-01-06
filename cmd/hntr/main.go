@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
@@ -35,6 +36,7 @@ func main() {
 		dbUrl       = fs.String("postgres-url", "", "postgres db url, e.g. postgres://user:pass@localhost:5432/dbname")
 		bind        = fs.String("bind", ":8080", "bind to [ip]:port")
 		insertLimit = fs.Int("insert-limit", 10000, "max. number of inserts at once")
+		seed        = fs.Bool("seed", false, "load seed data")
 	)
 
 	// allow configuration to come from environment (which is loaded via .env file)
@@ -55,8 +57,42 @@ func main() {
 	// setup webserver
 	server := web.NewServer(*bind, *insertLimit, repo, dbc, gc)
 
+	// seed?
+	if *seed {
+		log.Println("seeding database")
+		log.Println(seedDb(repo))
+		os.Exit(0)
+	}
+
 	// start webserver
 	if err := server.Start(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func seedDb(repo *db.Queries) error {
+
+	ctx := context.Background()
+
+	box, err := repo.CreateBox(ctx, "Public Library")
+	if err != nil {
+		return err
+	}
+
+	_, err = repo.CreateAutomation(ctx, db.CreateAutomationParams{
+		Name:             "amass",
+		Description:      "Run amass on your defined scope domains to gather subdomains (passive) and feed them back into your hostnames table",
+		BoxID:            box.ID,
+		Command:          "amass enum -passive -d {data}",
+		SourceTable:      "hostnames",
+		SourceTags:       []string{"is_scope"},
+		DestinationTable: "hostnames",
+		DestinationTags:  []string{"source:amass"},
+		IsPublic:         true,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

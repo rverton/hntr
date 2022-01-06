@@ -28,7 +28,6 @@ export default function Home() {
   const [selected, setSelected] = useState({})
   const [filter, setFilter] = useState("")
   const [limit, setLimit] = useState(LIMIT)
-  const cancelButtonRef = useRef(null)
   const { hostnames, count, isLoading, isError } = useHostnames(id, filter, limit)
 
   const tableMemo = useMemo(() => {
@@ -99,74 +98,8 @@ export default function Home() {
 
       </Layout>
 
-      <Transition.Root show={showModal} as={Fragment}>
-        <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={() => setShowModal(!showModal)}>
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-            </Transition.Child>
+      <HostnamesImportModal showModal={showModal} setShowModal={setShowModal} id={id} />
 
-            {/* This element is to trick the browser into centering the modal contents. */}
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
-              &#8203;
-            </span>
-            <Transition.Child
-              as={Fragment}
-              enter="ease-out duration-300"
-              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enterTo="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
-              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            >
-              <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full sm:p-6">
-                <div className="sm:flex sm:items-start">
-                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                      Import Hostnames
-                    </Dialog.Title>
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500">
-                        You can use the following command to pipe hostnames directly into your box:
-                      </p>
-
-                      <div className="font-mono border p-5 text-sm my-3">
-                        <span className="text-gray-400">cat hostnames.txt | </span><span id="curl">curl --data-binary @- &quot;{apiUrl}/box/{id}/hostnames&quot;</span>
-                      </div>
-
-                      <p className="text-sm text-gray-500">
-                        If you want to add tags, just append it as a parameter:
-                      </p>
-
-                      <div className="font-mono border p-5 text-sm my-3">
-                        <span className="text-gray-400">echo example.com | </span>curl --data-binary @- &quot;{apiUrl}/box/{id}/hostnames<span className="font-bold">?tags=is_scope,is_wildcard</span>&quot;
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                  <button
-                    type="button"
-                    className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm"
-                    onClick={() => setShowModal(false)}
-                    ref={cancelButtonRef}
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            </Transition.Child>
-          </div>
-        </Dialog>
-      </Transition.Root>
     </>
   )
 }
@@ -188,7 +121,7 @@ function HostnamesTable({ data, selected, setSelected }) {
     <div className="flex flex-col text-gray-500">
       {data?.length > 0 && data.map(hostname => (
         <div
-          key={hostname.id}
+          key={hostname.hostname}
           className={classNames(
             "flex px-6 space-x-5 border-b border-gray-100 py-1 text-sm bg-gray-50",
             hostname.id in selected ? 'bg-orange-100' : ''
@@ -226,3 +159,76 @@ function HostnamesTable({ data, selected, setSelected }) {
   )
 }
 
+function HostnamesImportModal({ showModal, setShowModal, id }) {
+  const cancelButtonRef = useRef(null)
+  return (
+    <Transition.Root show={showModal} as={Fragment}>
+      <Dialog as="div" className="fixed z-10 inset-0 overflow-y-auto" initialFocus={cancelButtonRef} onClose={() => setShowModal(!showModal)}>
+        <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          </Transition.Child>
+
+          {/* This element is to trick the browser into centering the modal contents. */}
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+            &#8203;
+          </span>
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            enterTo="opacity-100 translate-y-0 sm:scale-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+            leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+          >
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full sm:p-6">
+              <div className="sm:flex sm:items-start">
+                <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                  <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
+                    Import Hostnames
+                  </Dialog.Title>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      You can use the following command to pipe hostnames directly into your box:
+                    </p>
+
+                    <div className="font-mono border p-5 text-sm my-3">
+                      <span className="text-gray-400">cat hostnames.txt | </span><span id="curl">curl --data-binary @- &quot;{apiUrl}/box/{id}/hostnames&quot;</span>
+                    </div>
+
+                    <p className="text-sm text-gray-500">
+                      If you want to add tags, just append it as a parameter:
+                    </p>
+
+                    <div className="font-mono border p-5 text-sm my-3">
+                      <span className="text-gray-400">echo example.com | </span>curl --data-binary @- &quot;{apiUrl}/box/{id}/hostnames<span className="font-bold">?tags=is_scope,is_wildcard</span>&quot;
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm"
+                  onClick={() => setShowModal(false)}
+                  ref={cancelButtonRef}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </Transition.Child>
+        </div>
+      </Dialog>
+    </Transition.Root>
+  )
+}

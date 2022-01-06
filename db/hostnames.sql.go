@@ -10,7 +10,7 @@ import (
 )
 
 const countHostnamesByBoxFilter = `-- name: CountHostnamesByBoxFilter :one
-SELECT count(*) from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::text[] <@ tags
+SELECT count(*) from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::varchar[] <@ tags
 `
 
 type CountHostnamesByBoxFilterParams struct {
@@ -27,7 +27,7 @@ func (q *Queries) CountHostnamesByBoxFilter(ctx context.Context, arg CountHostna
 }
 
 const createHostname = `-- name: CreateHostname :exec
-INSERT INTO hostnames (hostname, tags, box_id) VALUES ($1, $2, $3) RETURNING id, hostname, box_id, tags, created_at
+INSERT INTO hostnames (hostname, tags, box_id) VALUES ($1, $2, $3) RETURNING hostname, box_id, tags, created_at
 `
 
 type CreateHostnameParams struct {
@@ -42,7 +42,7 @@ func (q *Queries) CreateHostname(ctx context.Context, arg CreateHostnameParams) 
 }
 
 const listHostnamesByBox = `-- name: ListHostnamesByBox :many
-SELECT id, hostname, box_id, tags, created_at from hostnames WHERE box_id = $1 ORDER BY created_at DESC
+SELECT hostname, box_id, tags, created_at from hostnames WHERE box_id = $1 ORDER BY created_at DESC
 `
 
 func (q *Queries) ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Hostname, error) {
@@ -55,7 +55,6 @@ func (q *Queries) ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Ho
 	for rows.Next() {
 		var i Hostname
 		if err := rows.Scan(
-			&i.ID,
 			&i.Hostname,
 			&i.BoxID,
 			&i.Tags,
@@ -72,7 +71,7 @@ func (q *Queries) ListHostnamesByBox(ctx context.Context, boxID uuid.UUID) ([]Ho
 }
 
 const listHostnamesByBoxFilter = `-- name: ListHostnamesByBoxFilter :many
-SELECT id, hostname, box_id, tags, created_at from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::text[] <@ tags ORDER BY created_at DESC
+SELECT hostname, box_id, tags, created_at from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::varchar[] <@ tags ORDER BY created_at DESC
 `
 
 type ListHostnamesByBoxFilterParams struct {
@@ -91,7 +90,6 @@ func (q *Queries) ListHostnamesByBoxFilter(ctx context.Context, arg ListHostname
 	for rows.Next() {
 		var i Hostname
 		if err := rows.Scan(
-			&i.ID,
 			&i.Hostname,
 			&i.BoxID,
 			&i.Tags,
@@ -108,7 +106,7 @@ func (q *Queries) ListHostnamesByBoxFilter(ctx context.Context, arg ListHostname
 }
 
 const listHostnamesByBoxFilterPaginated = `-- name: ListHostnamesByBoxFilterPaginated :many
-SELECT id, hostname, box_id, tags, created_at from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::text[] <@ tags ORDER BY created_at DESC LIMIT $4 OFFSET $5
+SELECT hostname, box_id, tags, created_at from hostnames WHERE box_id = $1 AND hostname like $2 AND $3::varchar[] <@ tags ORDER BY created_at DESC LIMIT $4 OFFSET $5
 `
 
 type ListHostnamesByBoxFilterPaginatedParams struct {
@@ -135,7 +133,6 @@ func (q *Queries) ListHostnamesByBoxFilterPaginated(ctx context.Context, arg Lis
 	for rows.Next() {
 		var i Hostname
 		if err := rows.Scan(
-			&i.ID,
 			&i.Hostname,
 			&i.BoxID,
 			&i.Tags,

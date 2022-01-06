@@ -13,12 +13,14 @@ import (
 type Automation struct {
 	ID               uuid.UUID `json:"id"`
 	Name             string    `json:"name"`
+	Description      string    `json:"description"`
 	BoxID            uuid.UUID `json:"box_id"`
 	Command          string    `json:"command"`
 	SourceTable      string    `json:"source_table"`
 	SourceTags       []string  `json:"source_tags"`
 	DestinationTable string    `json:"destination_table"`
 	DestinationTags  []string  `json:"destination_tags"`
+	IsPublic         bool      `json:"is_public"`
 	CreatedAt        time.Time `json:"created_at"`
 }
 
@@ -65,7 +67,6 @@ type GueJob struct {
 }
 
 type Hostname struct {
-	ID        int64     `json:"id"`
 	Hostname  string    `json:"hostname"`
 	BoxID     uuid.UUID `json:"box_id"`
 	Tags      []string  `json:"tags"`

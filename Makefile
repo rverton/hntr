@@ -19,6 +19,9 @@ build:
 run:
 	go run ./cmd/hntr/
 
+seed:
+	go run ./cmd/hntr/ -seed
+
 watch:
 	ulimit -n 1000 #increase the file watch limit, might required on MacOS
 	reflex -R '^frontend/' -s -r '\.go$$' make run

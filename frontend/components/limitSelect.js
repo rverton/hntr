@@ -29,7 +29,7 @@ export default function LimitSelect({ limit, setLimit }) {
           <div className="py-1">
             {limits.map(l => {
               return (
-                <Menu.Item>
+                <Menu.Item key={l}>
                   {({ active }) => (
                     <a
                       href="#"

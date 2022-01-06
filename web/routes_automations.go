@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"hntr/db"
@@ -11,9 +10,12 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/vgarvardt/gue/v3"
 )
+
+const TAGS_MAX = 20
 
 type AutomationHostnameCount struct {
 	db.Automation
@@ -30,7 +32,7 @@ func (s *Server) ListAutomations(c echo.Context) error {
 	}
 
 	automations, err := s.repo.ListAutomations(ctx, id)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("listing automations failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
@@ -67,7 +69,7 @@ func (s *Server) ListAutomationEvents(c echo.Context) error {
 	}
 
 	automationEvents, err := s.repo.ListAutomationEvents(ctx, id)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("listing automations failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
@@ -85,7 +87,7 @@ func (s *Server) StartAutomation(c echo.Context) error {
 	}
 
 	automation, err := s.repo.GetAutomation(ctx, id)
-	if err == sql.ErrNoRows {
+	if err == pgx.ErrNoRows {
 		return c.JSON(http.StatusNotFound, nil)
 	}
 
@@ -115,7 +117,7 @@ func createAndEnqueue(ctx context.Context, automation db.Automation, repo *db.Qu
 	}
 
 	hostnames, err := repo.ListHostnamesByBoxFilter(ctx, params)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && err != pgx.ErrNoRows {
 		return fmt.Errorf("getting hostnames failed: %v", err)
 	}
 
@@ -153,4 +155,84 @@ func createAndEnqueue(ctx context.Context, automation db.Automation, repo *db.Qu
 	}
 
 	return nil
+}
+
+func (s *Server) ListAutomationLibrary(c echo.Context) error {
+	ctx := context.Background()
+
+	automations, err := s.repo.ListAutomationLibrary(ctx)
+	if err != nil && err != pgx.ErrNoRows {
+		log.Printf("listing automations failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusOK, automations)
+}
+
+func (s *Server) AddAutomation(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	box, err := s.repo.GetBox(ctx, id)
+
+	if err == pgx.ErrNoRows {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, box)
+	}
+
+	automation := new(db.Automation)
+	if err = c.Bind(automation); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid destination data",
+		})
+	}
+
+	allowedSources := []string{"hostnames"}
+	allowedDestinations := []string{"hostnames"}
+
+	if !inStringSlice(automation.SourceTable, allowedSources) ||
+		!inStringSlice(automation.DestinationTable, allowedDestinations) {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "source or destination table not allowed",
+		})
+	}
+
+	if len(automation.SourceTags) > TAGS_MAX || len(automation.DestinationTags) > TAGS_MAX {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": fmt.Sprintf("too many tags. max_tags=%v", TAGS_MAX),
+		})
+	}
+
+	automationCreated, err := s.repo.CreateAutomation(ctx, db.CreateAutomationParams{
+		BoxID:            box.ID,
+		Name:             automation.Name,
+		Description:      automation.Description,
+		Command:          automation.Command,
+		SourceTable:      automation.SourceTable,
+		SourceTags:       automation.SourceTags,
+		DestinationTable: automation.DestinationTable,
+		DestinationTags:  automation.DestinationTags,
+	})
+	if err != nil {
+		log.Printf("error creating automation: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusOK, automationCreated)
+}
+
+func inStringSlice(s string, slice []string) bool {
+	for _, s2 := range slice {
+		if s == s2 {
+			return true
+		}
+	}
+	return false
 }

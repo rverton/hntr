@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"database/sql"
 	"hntr/db"
 	"io"
 	"log"
@@ -51,13 +50,13 @@ func (s *Server) ListHostnames(c echo.Context) error {
 	}
 
 	hostnames, err := s.repo.ListHostnamesByBoxFilterPaginated(ctx, params)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("listing boxes failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
 	count, err := s.repo.CountHostnamesByBoxFilter(ctx, paramsCount)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("listing boxes failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}

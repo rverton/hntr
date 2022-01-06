@@ -9,8 +9,57 @@ import (
 	"github.com/google/uuid"
 )
 
+const createAutomation = `-- name: CreateAutomation :one
+INSERT INTO automations (
+    name, description, box_id, command, source_table, source_tags, destination_table, destination_tags, is_public
+) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id, name, description, box_id, command, source_table, source_tags, destination_table, destination_tags, is_public, created_at
+`
+
+type CreateAutomationParams struct {
+	Name             string    `json:"name"`
+	Description      string    `json:"description"`
+	BoxID            uuid.UUID `json:"box_id"`
+	Command          string    `json:"command"`
+	SourceTable      string    `json:"source_table"`
+	SourceTags       []string  `json:"source_tags"`
+	DestinationTable string    `json:"destination_table"`
+	DestinationTags  []string  `json:"destination_tags"`
+	IsPublic         bool      `json:"is_public"`
+}
+
+func (q *Queries) CreateAutomation(ctx context.Context, arg CreateAutomationParams) (Automation, error) {
+	row := q.db.QueryRow(ctx, createAutomation,
+		arg.Name,
+		arg.Description,
+		arg.BoxID,
+		arg.Command,
+		arg.SourceTable,
+		arg.SourceTags,
+		arg.DestinationTable,
+		arg.DestinationTags,
+		arg.IsPublic,
+	)
+	var i Automation
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.BoxID,
+		&i.Command,
+		&i.SourceTable,
+		&i.SourceTags,
+		&i.DestinationTable,
+		&i.DestinationTags,
+		&i.IsPublic,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const createAutomationEvent = `-- name: CreateAutomationEvent :one
-INSERT INTO automation_events (box_id, automation_id, data, status, unique_results) VALUES ($1, $2, $3, $4, $5) RETURNING id, box_id, automation_id, status, data, unique_results, created_at, finished_at
+INSERT INTO automation_events (
+    box_id, automation_id, data, status, unique_results
+) VALUES ($1, $2, $3, $4, $5) RETURNING id, box_id, automation_id, status, data, unique_results, created_at, finished_at
 `
 
 type CreateAutomationEventParams struct {
@@ -44,7 +93,7 @@ func (q *Queries) CreateAutomationEvent(ctx context.Context, arg CreateAutomatio
 }
 
 const getAutomation = `-- name: GetAutomation :one
-SELECT id, name, box_id, command, source_table, source_tags, destination_table, destination_tags, created_at FROM automations WHERE id = $1 LIMIT 1
+SELECT id, name, description, box_id, command, source_table, source_tags, destination_table, destination_tags, is_public, created_at FROM automations WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error) {
@@ -53,12 +102,14 @@ func (q *Queries) GetAutomation(ctx context.Context, id uuid.UUID) (Automation, 
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Description,
 		&i.BoxID,
 		&i.Command,
 		&i.SourceTable,
 		&i.SourceTags,
 		&i.DestinationTable,
 		&i.DestinationTags,
+		&i.IsPublic,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -97,8 +148,57 @@ func (q *Queries) ListAutomationEvents(ctx context.Context, automationID uuid.UU
 	return items, nil
 }
 
+const listAutomationLibrary = `-- name: ListAutomationLibrary :many
+SELECT 
+    id, name, description, command, source_table, source_tags, destination_table, destination_tags, is_public
+FROM automations
+WHERE is_public = true
+`
+
+type ListAutomationLibraryRow struct {
+	ID               uuid.UUID `json:"id"`
+	Name             string    `json:"name"`
+	Description      string    `json:"description"`
+	Command          string    `json:"command"`
+	SourceTable      string    `json:"source_table"`
+	SourceTags       []string  `json:"source_tags"`
+	DestinationTable string    `json:"destination_table"`
+	DestinationTags  []string  `json:"destination_tags"`
+	IsPublic         bool      `json:"is_public"`
+}
+
+func (q *Queries) ListAutomationLibrary(ctx context.Context) ([]ListAutomationLibraryRow, error) {
+	rows, err := q.db.Query(ctx, listAutomationLibrary)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListAutomationLibraryRow{}
+	for rows.Next() {
+		var i ListAutomationLibraryRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Description,
+			&i.Command,
+			&i.SourceTable,
+			&i.SourceTags,
+			&i.DestinationTable,
+			&i.DestinationTags,
+			&i.IsPublic,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAutomations = `-- name: ListAutomations :many
-SELECT id, name, box_id, command, source_table, source_tags, destination_table, destination_tags, created_at FROM automations WHERE box_id = $1
+SELECT id, name, description, box_id, command, source_table, source_tags, destination_table, destination_tags, is_public, created_at FROM automations WHERE box_id = $1
 `
 
 func (q *Queries) ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Automation, error) {
@@ -113,12 +213,14 @@ func (q *Queries) ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Autom
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
+			&i.Description,
 			&i.BoxID,
 			&i.Command,
 			&i.SourceTable,
 			&i.SourceTags,
 			&i.DestinationTable,
 			&i.DestinationTags,
+			&i.IsPublic,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
