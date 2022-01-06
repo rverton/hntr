@@ -16,6 +16,8 @@ export default function AutomationShow() {
 
   const { automations, isLoading, isError } = useAutomations(id)
 
+  const { mutate } = useAutomationEvents(aid)
+
   useEffect(() => {
     if (!isLoading) {
       console.log(automations, aid)
@@ -26,10 +28,14 @@ export default function AutomationShow() {
     }
   }, [automations])
 
-  const runAutomation = async (aid) => {
+  const runAutomation = () => {
+    if (automation.source_count <= 0) {
+      return alert('There are not entries to run this automation on')
+    }
+
     api.post(`/automations/${aid}/start`)
       .then(() => {
-        console.log('started automation')
+        mutate()
       })
       .catch(err => {
         console.error(err);
@@ -56,7 +62,7 @@ export default function AutomationShow() {
               <Link href={`/${automation.source_table}/?id=${id}`}><a className="text-blue-600">{automation.source_count} entries</a></Link>{' '}
               currently
             </div>
-            <button onClick={() => runAutomation(automation.id)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm rounded-md text-white bg-gray-600 hover:bg-gray-700 sm:mt-0 sm:w-auto">
+            <button onClick={runAutomation} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm rounded-md text-white bg-gray-600 hover:bg-gray-700 sm:mt-0 sm:w-auto">
               Start Automation
             </button>
           </div>
