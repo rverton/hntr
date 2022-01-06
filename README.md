@@ -5,15 +5,8 @@
 Example `.env` file
 ```
 BIND=127.0.0.1:8080
-POSTGRES_HOST=localhost:5432
-POSTGRES_DB=hntr-go
-POSTGRES_USER=postgres
-POSTGRES_PASS=postgres
-
-POSTGRES_TEST_HOST=localhost:5432
-POSTGRES_TEST_DB=hntr-go_test
-POSTGRES_TEST_USER=postgres
-POSTGRES_TEST_PASS=postgres
+POSTGRES_URL=postgres://postgres:postgres@localhost:5432/dbname
+POSTGRES_TEST_URL=postgres://postgres:postgres@localhost:5432/dbname
 ```
 
 ## Development
@@ -30,6 +23,11 @@ Database stuff can be setup via:
 
     $ make migrate
     $ sqlc generate
+    
+Watch mode to run a watcher for the backend (`*.go`) and for the frontend (Next.js):
+
+    $ make watch
+    $ make watch-frontend
     
 ### Testing
 
