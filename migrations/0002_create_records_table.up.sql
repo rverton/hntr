@@ -7,7 +7,7 @@ CREATE TABLE records (
 
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
-    PRIMARY KEY (data, box_id, container),
+    PRIMARY KEY (box_id, container, data),
 
     CONSTRAINT fk_box
       FOREIGN KEY(box_id) 

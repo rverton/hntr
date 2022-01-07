@@ -85,7 +85,7 @@ export default function AutomationShow() {
           </div>
         </div>
 
-        <div className="px-5 pt-6 space-y-1 text-sm bg-gray-50">
+        <div className="px-5 py-6 space-y-1 text-sm bg-gray-50">
 
           <div className="flex">
             <div className="w-32 font-medium">Source:</div>
@@ -131,7 +131,7 @@ function AutomationRunsTable({ automationId }) {
   return (
     <>
 
-      <div className="flex items-center justify-end space-x-2 text-sm bg-gray-50 p-2">
+      <div className="flex items-center justify-end space-x-2 text-sm bg-gray-50 pr-5 py-2 border-t border-gray-300 border-dashed">
         <div className="text-sm text-gray-500">
           {events.length} log events
         </div>
@@ -139,12 +139,12 @@ function AutomationRunsTable({ automationId }) {
       </div>
 
       <div className="flex flex-col">
-        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+        <div className="w-full">
+          <div className="align-middle inline-block">
             <table className="w-full table-fixed mb-8">
               <thead>
                 <tr>
-                  <th className="w-1/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-l">
+                  <th className="w-1/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
                     Status
                   </th>
                   <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
@@ -156,7 +156,7 @@ function AutomationRunsTable({ automationId }) {
                   <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
                     Unique Results
                   </th>
-                  <th className="w-7/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-r">
+                  <th className="w-7/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
                     Data
                   </th>
                 </tr>

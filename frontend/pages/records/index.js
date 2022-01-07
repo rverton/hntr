@@ -77,7 +77,7 @@ export default function Home() {
               </div>
               <div className="flex items-center space-x-1">
                 {records && <div className="pr-4 text-sm">
-                  {numberFormat(count)} hosts
+                  {numberFormat(count)} total
                   {Object.keys(selected).length > 0 && <span>, {Object.keys(selected).length} selected</span>}
                 </div>}
 
