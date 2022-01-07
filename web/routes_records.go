@@ -14,7 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-const LIMIT_MAX = 25000
+const LIMIT_MAX = 50000
 
 func (s *Server) ListRecords(c echo.Context) error {
 	ctx := context.Background()
@@ -30,7 +30,7 @@ func (s *Server) ListRecords(c echo.Context) error {
 	searchword, tags := parseTerm(c.QueryParam("term"))
 
 	if limit < 1 || limit > LIMIT_MAX {
-		limit = 500
+		limit = LIMIT_MAX
 	}
 
 	params := db.ListRecordsByBoxFilterPaginatedParams{
@@ -91,13 +91,6 @@ func (s *Server) AddRecords(c echo.Context) error {
 	tags := strings.FieldsFunc(c.QueryParam("tags"), func(c rune) bool {
 		return c == ','
 	})
-
-	source := c.QueryParam("source")
-	if source == "" {
-		source = "api"
-	}
-
-	tags = append(tags, "source:"+source)
 
 	added := 0
 	batch := &pgx.Batch{}

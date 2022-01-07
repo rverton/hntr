@@ -8,6 +8,7 @@ import { Dialog, Transition } from '@headlessui/react'
 import Layout from '../../components/layout'
 import Tag from '../../components/tagBadge'
 import LimitSelect from '../../components/limitSelect'
+import SelectedAction from '../../components/selectedAction'
 
 import useRecords from '../../hooks/useRecords'
 
@@ -78,10 +79,10 @@ export default function Home() {
               <div className="flex items-center space-x-1">
                 {records && <div className="pr-4 text-sm">
                   {numberFormat(count)} total
-                  {Object.keys(selected).length > 0 && <span>, {Object.keys(selected).length} selected</span>}
                 </div>}
 
                 <LimitSelect limit={limit} setLimit={setLimit} />
+                <SelectedAction records={records} selected={selected} setSelected={setSelected} />
 
                 <button onClick={() => setShowModalExport(true)} type="submit" className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-2 py-2 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-0">
                   Export
@@ -110,13 +111,15 @@ export default function Home() {
 }
 
 function RecordsTable({ data, selected, setSelected }) {
-  const toggleRowSelection = (guid) => {
+  const toggleRowSelection = (event, data) => {
+    if (!event.altKey) return;
+
     let copy = Object.assign({}, selected)
 
-    if (guid in selected) {
-      delete copy[guid]
+    if (data in selected) {
+      delete copy[data]
     } else {
-      copy[guid] = 1
+      copy[data] = 1
     }
 
     setSelected(copy)
@@ -131,7 +134,7 @@ function RecordsTable({ data, selected, setSelected }) {
             "flex px-6 space-x-5 border-b border-gray-100 py-1 text-sm bg-gray-50",
             record.data in selected ? 'bg-orange-100' : ''
           )}
-          onDoubleClick={() => toggleRowSelection(record.data)}
+          onClick={(event) => toggleRowSelection(event, record.data)}
         >
           <div className="flex items-center text-gray-400 w-32 font-light font-mono text-xs">
             {format(parseISO(record.created_at), 'yy-MM-dd HH:mm:ss')}
