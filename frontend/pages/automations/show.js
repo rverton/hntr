@@ -17,6 +17,7 @@ export default function AutomationShow() {
   const router = useRouter()
   const { id, aid } = router.query
   const [automation, setAutomation] = useState({})
+  const [disabled, setDisabled] = useState(false);
 
   const { automations, isLoading, isError } = useAutomations(id)
 
@@ -38,6 +39,11 @@ export default function AutomationShow() {
   }, [automations])
 
   const runAutomation = () => {
+    setDisabled(true);
+    setTimeout(() => {
+      setDisabled(false);
+    }, 5000);
+
     if (automation.source_count <= 0) {
       return alert(`There are 0 records to run this automation on matching {automation.source_container}`)
     }
@@ -70,7 +76,10 @@ export default function AutomationShow() {
               <Link href={`/${automation.source_container}/?id=${id}`}><a className="text-blue-600">{automation.source_count} entries</a></Link>{' '}
               currently
             </div>
-            <button onClick={runAutomation} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm rounded-md text-white bg-gray-600 hover:bg-gray-700 sm:mt-0 sm:w-auto">
+            <button
+              onClick={runAutomation}
+              disabled={disabled}
+              className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 disabled:bg-gray-300 disabled:hover:bg-gray-300 tracking-widest text-xs border border-transparent shadow-sm rounded-md text-white bg-gray-600 hover:bg-gray-700 sm:mt-0 sm:w-auto">
               Start Automation
             </button>
           </div>
