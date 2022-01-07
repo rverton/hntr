@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	CountRecordsByBox(ctx context.Context, boxID uuid.UUID) (int64, error)
 	CountRecordsByBoxFilter(ctx context.Context, arg CountRecordsByBoxFilterParams) (int64, error)
 	CreateAutomation(ctx context.Context, arg CreateAutomationParams) (Automation, error)
 	CreateAutomationEvent(ctx context.Context, arg CreateAutomationEventParams) (AutomationEvent, error)

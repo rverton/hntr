@@ -9,6 +9,18 @@ import (
 	"github.com/google/uuid"
 )
 
+const countRecordsByBox = `-- name: CountRecordsByBox :one
+SELECT count(*) FROM records WHERE 
+    box_id = $1
+`
+
+func (q *Queries) CountRecordsByBox(ctx context.Context, boxID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countRecordsByBox, boxID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const countRecordsByBoxFilter = `-- name: CountRecordsByBoxFilter :one
 SELECT count(*) FROM records WHERE 
     box_id = $1 AND

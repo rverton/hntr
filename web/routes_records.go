@@ -15,6 +15,7 @@ import (
 )
 
 const LIMIT_MAX = 50000
+const LIMIT_RECORDS = 100000
 
 func (s *Server) ListRecords(c echo.Context) error {
 	ctx := context.Background()
@@ -72,18 +73,37 @@ func (s *Server) AddRecords(c echo.Context) error {
 
 	id, err := uuid.Parse(c.Param("id"))
 	if err != nil {
-		log.Printf("unable to parse id: %v", err)
 		return c.JSON(http.StatusNotFound, nil)
 	}
 
 	container := c.Param("container")
 
-	// TODO: add overall count to limit max. entries in box
-	// TODO: retrieve box and check if box exists!
+	// ensure box exists
+	box, err := s.repo.GetBox(ctx, id)
+
+	if err == pgx.ErrNoRows {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	if err != nil {
+		log.Printf("getting box failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, box)
+	}
+
+	if !inStringSlice(container, box.Containers) {
+		if err == pgx.ErrNoRows {
+			return c.JSON(http.StatusNotFound, nil)
+		}
+	}
+
+	count, err := s.repo.CountRecordsByBox(ctx, id)
+	if err != nil {
+		log.Printf("getting box count failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, box)
+	}
 
 	b, err := io.ReadAll(c.Request().Body)
 	if err != nil {
-		log.Printf("unable to read request body: %v", err)
 		return c.JSON(http.StatusBadRequest, nil)
 	}
 
@@ -92,7 +112,7 @@ func (s *Server) AddRecords(c echo.Context) error {
 		return c == ','
 	})
 
-	added := 0
+	var added int64
 	batch := &pgx.Batch{}
 
 	for _, line := range strings.Split(string(b), "\n") {
@@ -101,7 +121,7 @@ func (s *Server) AddRecords(c echo.Context) error {
 			continue
 		}
 
-		if added > s.insertLimit-1 {
+		if count+added > int64(s.recordsLimit-1) {
 			break
 		}
 
@@ -118,7 +138,8 @@ func (s *Server) AddRecords(c echo.Context) error {
 	br := s.dbPool.SendBatch(ctx, batch)
 
 	var affected int64
-	for i := 0; i < added; i++ {
+	var i int64
+	for i = 0; i < added; i++ {
 		ct, err := br.Exec()
 		if err != nil {
 			log.Printf("error executing batch: %v", err)
@@ -133,6 +154,26 @@ func (s *Server) AddRecords(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"added": affected,
+	})
+}
+
+func (s *Server) CountRecords(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	count, err := s.repo.CountRecordsByBox(ctx, id)
+	if err != nil {
+		log.Printf("listing boxes failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"count": count,
+		"limit": s.recordsLimit,
 	})
 }
 

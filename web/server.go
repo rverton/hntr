@@ -29,7 +29,7 @@ type Server struct {
 	dbPool *pgxpool.Pool
 	queue  *gue.Client
 
-	insertLimit int
+	recordsLimit int
 }
 
 type CustomValidator struct {
@@ -59,14 +59,14 @@ func validationErrorMsg(fe validator.FieldError) string {
 	return fe.Error() // default error
 }
 
-func NewServer(addr string, insertLimit int, repo *db.Queries, dbPool *pgxpool.Pool, gc *gue.Client) *Server {
+func NewServer(addr string, recordsLimit int, repo *db.Queries, dbPool *pgxpool.Pool, gc *gue.Client) *Server {
 	debugMode := os.Getenv("DEBUG") != ""
 
 	server := &Server{
-		addr:        addr,
-		queue:       gc,
-		dbPool:      dbPool,
-		insertLimit: insertLimit,
+		addr:         addr,
+		queue:        gc,
+		dbPool:       dbPool,
+		recordsLimit: recordsLimit,
 	}
 
 	e := echo.New()
@@ -88,6 +88,7 @@ func NewServer(addr string, insertLimit int, repo *db.Queries, dbPool *pgxpool.P
 	e.PUT("/api/box/:id", server.UpdateBox)
 
 	// records
+	e.GET("/api/box/:id/_count", server.CountRecords)
 	e.GET("/api/box/:id/:container", server.ListRecords)
 	e.POST("/api/box/:id/:container", server.AddRecords)
 

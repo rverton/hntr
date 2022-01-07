@@ -2,6 +2,7 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 
 import useBox from '../hooks/useBox'
+import useRecordsCount from '../hooks/useRecordsCount'
 
 import api from '../lib/api'
 
@@ -14,20 +15,22 @@ function capitalize(str) {
   return str.charAt(0).toUpperCase() + lower.slice(1);
 }
 
+const numberFormat = num => Math.abs(num) > 999 ? Math.sign(num) * ((Math.abs(num) / 1000).toFixed(1)) + 'k' : Math.sign(num) * Math.abs(num)
 
 export default function Layout({ children }) {
   const router = useRouter()
   const { id, container } = router.query
   const { box, isLoading, isError, mutate } = useBox(id)
+  const { count, limit } = useRecordsCount(id)
 
   const handleUpdateBox = (shouldChangeName) => {
     let updateValues = { name: box.name, containers: box.containers }
     if (shouldChangeName) {
-      updateValues.name = prompt('Please choose a new name:')
+      updateValues.name = prompt('Please choose a new name for this box:')
 
       if (!updateValues.name) return;
     } else {
-      let newName = prompt('Please choose a container name:')
+      let newName = prompt('Please choose a name to create a new container:')
       if (!newName) return;
 
       updateValues.containers = [...updateValues.containers, newName]
@@ -96,8 +99,22 @@ export default function Layout({ children }) {
             </Link>
           </div>
         </div>
-        <div className="flex items-center p-4 text-sm font-medium">
-          Help
+
+        <div className="flex flex-col p-4 text-sm font-medium">
+          <a
+            className={classNames(
+              "font-medium text-gray-600 w-full px-2 py-1 text-sm hover:bg-gray-100 rounded-sm",
+            )}
+          >
+            {numberFormat(count)} / {numberFormat(limit)} Quota
+          </a>
+          <a
+            className={classNames(
+              "font-medium text-gray-600 w-full px-2 py-1 text-sm hover:bg-gray-100 rounded-sm",
+            )}
+          >
+            Help
+          </a>
         </div>
       </div>
 

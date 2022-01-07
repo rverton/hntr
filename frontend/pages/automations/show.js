@@ -133,7 +133,7 @@ function AutomationRunsTable({ automationId }) {
 
       <div className="flex items-center justify-end space-x-2 text-sm bg-gray-50 pr-5 py-2 border-t border-gray-300 border-dashed">
         <div className="text-sm text-gray-500">
-          {events.length} log events
+          {events.length} events
         </div>
         <LimitSelect limit={limit} setLimit={setLimit} />
       </div>

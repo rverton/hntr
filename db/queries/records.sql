@@ -22,5 +22,9 @@ SELECT count(*) FROM records WHERE
     $3::varchar[] <@ tags AND
     data LIKE $4;
 
+-- name: CountRecordsByBox :one
+SELECT count(*) FROM records WHERE 
+    box_id = $1; 
+
 -- name: CreateRecord :exec
 INSERT INTO records (data, tags, box_id, container) VALUES ($1, $2, $3, $4);
