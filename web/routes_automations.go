@@ -8,6 +8,7 @@ import (
 	"hntr/jobs"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
@@ -31,8 +32,6 @@ func (s *Server) ListAutomations(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, nil)
 	}
 
-	container := c.Param("container")
-
 	automations, err := s.repo.ListAutomations(ctx, id)
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("listing automations failed: %v", err)
@@ -44,7 +43,7 @@ func (s *Server) ListAutomations(c echo.Context) error {
 	for _, automation := range automations {
 		params := db.CountRecordsByBoxFilterParams{
 			BoxID:     automation.BoxID,
-			Container: container,
+			Container: automation.SourceContainer,
 			Data:      "%%",
 			Column3:   automation.SourceTags,
 		}
@@ -71,7 +70,15 @@ func (s *Server) ListAutomationEvents(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, nil)
 	}
 
-	automationEvents, err := s.repo.ListAutomationEvents(ctx, id)
+	limit, _ := strconv.Atoi(c.QueryParam("limit"))
+	if limit <= 0 {
+		limit = 500
+	}
+
+	automationEvents, err := s.repo.ListAutomationEvents(ctx, db.ListAutomationEventsParams{
+		AutomationID: id,
+		Limit:        int32(limit),
+	})
 	if err != nil && err != pgx.ErrNoRows {
 		log.Printf("listing automations failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)

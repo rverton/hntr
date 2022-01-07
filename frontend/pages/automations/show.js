@@ -4,10 +4,14 @@ import { useState, useEffect, useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
 
 import Layout from '../../components/layout'
+import LimitSelect from '../../components/limitSelect'
+
 import useAutomations from '../../hooks/useAutomations'
 import useAutomationEvents from '../../hooks/useAutomationEvents'
 
 import api from '../../lib/api'
+
+const LIMIT = 500
 
 export default function AutomationShow() {
   const router = useRouter()
@@ -72,37 +76,33 @@ export default function AutomationShow() {
           </div>
         </div>
 
-        <div className="p-5">
-          <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
-            <div className="sm:col-span-1">
-              <dt className="text-sm font-medium text-gray-500">Source Table</dt>
-              <dd className="mt-1 text-sm text-gray-900">{automation.source_container}</dd>
-            </div>
-            <div className="sm:col-span-1">
-              <dt className="text-sm font-medium text-gray-500">Source Tags</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {automation.source_tags}
-                {!automation.source_tags?.length && <span>No tags</span>}
-              </dd>
-            </div>
-            <div className="sm:col-span-1">
-              <dt className="text-sm font-medium text-gray-500">Destination Table</dt>
-              <dd className="mt-1 text-sm text-gray-900">{automation.destination_container}</dd>
-            </div>
-            <div className="sm:col-span-1">
-              <dt className="text-sm font-medium text-gray-500">Destionation Tags</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                {automation.destination_tags}
-                {!automation.destination_tags?.length && <span>No tags</span>}
-              </dd>
-            </div>
-            <div className="sm:col-span-2">
-              <dt className="text-sm font-medium text-gray-500">Command</dt>
-              <dd className="mt-1 text-sm text-gray-900">
-                <div className="font-mono text-sm">{automation.command}</div>
-              </dd>
-            </div>
-          </dl>
+        <div className="px-5 pt-6 space-y-1 text-sm bg-gray-50">
+
+          <div className="flex">
+            <div className="w-32 font-medium">Source:</div>
+            <span className="px-1 font-mono text-sm bg-gray-200 rounded mr-1">{automation.source_container}</span>
+            filtered by
+            <span className="px-1 font-mono text-sm bg-gray-200 rounded ml-1">
+              {automation.source_tags}
+              {automation?.source_tag?.length <= 0 && <>No tags</>}
+            </span>
+          </div>
+
+          <div className="flex">
+            <div className="w-32 font-medium text-sm">Destination:</div>
+            <span className="px-1 font-mono text-sm bg-gray-200 rounded mr-1">{automation.destination_container}</span>
+            adding tags
+            <span className="px-1 font-mono text-sm bg-gray-200 rounded ml-1">
+              {automation.destination_tags}
+              {automation?.destination_tags?.length <= 0 && <>No tags</>}
+            </span>
+          </div>
+
+          <div className="flex">
+            <div className="w-32 font-medium text-sm">Command:</div>
+            <span className="px-1 font-mono">{automation.command}</span>
+          </div>
+
         </div>
 
         {tableMemo}
@@ -112,54 +112,66 @@ export default function AutomationShow() {
 }
 
 function AutomationRunsTable({ automationId }) {
-  const { events, isLoading, isError } = useAutomationEvents(automationId)
+  const [limit, setLimit] = useState(LIMIT)
+
+  const { events, isLoading, isError } = useAutomationEvents(automationId, limit)
 
   if (isError) return <div>An error occured loading the data.</div>
   if (isLoading) return <div>Loading</div>
 
   return (
-    <div className="flex flex-col">
-      <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-          <table className="w-full table-fixed mb-8">
-            <thead>
-              <tr>
-                <th className="w-1/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-l">
-                  Status
-                </th>
-                <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
-                  Started
-                </th>
-                <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
-                  Finished
-                </th>
-                <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
-                  Unique Results
-                </th>
-                <th className="w-7/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-r">
-                  Data
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {events.map((event) => (
-                <tr key={event.id}>
-                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm font-medium text-gray-900">{event.status}</td>
-                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">
-                    {format(parseISO(event.created_at), 'yy-MM-dd HH:mm:ss')}
-                  </td>
-                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">
-                    {event.finished_at.Valid && format(parseISO(event.finished_at.Time), 'yy-MM-dd HH:mm:ss')}
-                  </td>
-                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">{event.unique_results}</td>
-                  <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">{event.data}</td>
+    <>
+
+      <div className="flex items-center justify-end space-x-2 text-sm bg-gray-50 p-2">
+        <div className="text-sm text-gray-500">
+          {events.length} log events
+        </div>
+        <LimitSelect limit={limit} setLimit={setLimit} />
+      </div>
+
+      <div className="flex flex-col">
+        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+            <table className="w-full table-fixed mb-8">
+              <thead>
+                <tr>
+                  <th className="w-1/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-l">
+                    Status
+                  </th>
+                  <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
+                    Started
+                  </th>
+                  <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
+                    Finished
+                  </th>
+                  <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
+                    Unique Results
+                  </th>
+                  <th className="w-7/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2 border-r">
+                    Data
+                  </th>
                 </tr>
-              ))}
-              {events && events.length <= 0 && <tr><td colspan="5" className="p-3 text-center">No runs till yet.</td></tr>}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {events.map((event) => (
+                  <tr key={event.id}>
+                    <td className="px-2 py-1 text-sm whitespace-nowrap text-sm font-medium text-gray-900">{event.status}</td>
+                    <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">
+                      {format(parseISO(event.created_at), 'yy-MM-dd HH:mm:ss')}
+                    </td>
+                    <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">
+                      {event.finished_at.Valid && format(parseISO(event.finished_at.Time), 'yy-MM-dd HH:mm:ss')}
+                    </td>
+                    <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">{event.unique_results}</td>
+                    <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">{event.data}</td>
+                  </tr>
+                ))}
+                {events && events.length <= 0 && <tr><td colspan="5" className="p-3 text-center">No runs till yet.</td></tr>}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   )
 }

@@ -22,7 +22,7 @@ UPDATE automation_events SET status = 'started' where id = $1;
 UPDATE automation_events SET status = 'finished', finished_at = now() where id = $1;
 
 -- name: ListAutomationEvents :many
-SELECT * FROM automation_events WHERE automation_id = $1 ORDER BY created_at DESC;
+SELECT * FROM automation_events WHERE automation_id = $1 ORDER BY created_at DESC LIMIT $2;
 
 -- name: CreateAutomation :one
 INSERT INTO automations (

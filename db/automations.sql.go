@@ -116,11 +116,16 @@ func (q *Queries) GetAutomation(ctx context.Context, id uuid.UUID) (Automation, 
 }
 
 const listAutomationEvents = `-- name: ListAutomationEvents :many
-SELECT id, box_id, automation_id, status, data, unique_results, created_at, finished_at FROM automation_events WHERE automation_id = $1 ORDER BY created_at DESC
+SELECT id, box_id, automation_id, status, data, unique_results, created_at, finished_at FROM automation_events WHERE automation_id = $1 ORDER BY created_at DESC LIMIT $2
 `
 
-func (q *Queries) ListAutomationEvents(ctx context.Context, automationID uuid.UUID) ([]AutomationEvent, error) {
-	rows, err := q.db.Query(ctx, listAutomationEvents, automationID)
+type ListAutomationEventsParams struct {
+	AutomationID uuid.UUID `json:"automation_id"`
+	Limit        int32     `json:"limit"`
+}
+
+func (q *Queries) ListAutomationEvents(ctx context.Context, arg ListAutomationEventsParams) ([]AutomationEvent, error) {
+	rows, err := q.db.Query(ctx, listAutomationEvents, arg.AutomationID, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
