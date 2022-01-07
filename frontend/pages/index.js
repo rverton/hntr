@@ -68,8 +68,40 @@ export default function Index() {
             </div>
           </div>
         </div>
-
       </div>
+
+      <img src="/screenshot.png" className="w-10/12 mt-5 mx-auto" />
+
+      <div className="max-w-6xl mx-auto my-20 sm:px-6 lg:px-8 p-3">
+        <div className="grid grid-cols-3 gap-12">
+          <div className="">
+            <h2 className="text-center text-xl">Import and Export</h2>
+            <p className="pt-2">Use curl to import and export data directly in and out of your box</p>
+          </div>
+          <div className="">
+            <h2 className="text-center text-xl">Tags</h2>
+            <p className="pt-2">Tag complete imports or just specific items. Filter them, export them, use them in workflows.</p>
+          </div>
+          <div className="">
+            <h2 className="text-xl">Collaboration</h2>
+            <p className="pt-2">Share your box and work together on your target in realtime.</p>
+          </div>
+          <div className="">
+            <h2 className="text-center text-xl">Automations</h2>
+            <p className="pt-2">Specify command which are executed on each record of a (filtered) list and feed them back into your own lists.</p>
+          </div>
+          <div className="">
+            <h2 className="text-center text-xl">No setup</h2>
+            <p className="pt-2">No registration, no configuration. Create a box and don't waste your time.</p>
+          </div>
+
+          <div className="">
+            <h2 className="text-center text-xl">Shortcuts</h2>
+            <p className="pt-2">Use your keyboard to move fast through your box and execute actions.</p>
+          </div>
+        </div>
+      </div>
+
     </>
   )
 }
