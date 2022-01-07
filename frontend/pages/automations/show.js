@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { format, parseISO } from 'date-fns'
 
 import Layout from '../../components/layout'
@@ -18,9 +18,14 @@ export default function AutomationShow() {
 
   const { mutate } = useAutomationEvents(aid)
 
+  const tableMemo = useMemo(() => {
+    return <AutomationRunsTable
+      automationId={aid}
+    />;
+  }, [aid])
+
   useEffect(() => {
     if (!isLoading) {
-      console.log(automations, aid)
       const automation = automations.filter(a => a.id === aid)
       if (automation.length > 0) {
         setAutomation(automation[0])
@@ -30,7 +35,7 @@ export default function AutomationShow() {
 
   const runAutomation = () => {
     if (automation.source_count <= 0) {
-      return alert('There are not entries to run this automation on')
+      return alert(`There are 0 records to run this automation on matching {automation.source_container}`)
     }
 
     api.post(`/automations/${aid}/start`)
@@ -49,7 +54,6 @@ export default function AutomationShow() {
     <>
       <Layout>
 
-
         <div className="h-16 flex items-center border-b px-4 bg-white text-xl justify-between">
           <div>
             <div className="text-xl">Automations: {automation.name}</div>
@@ -59,7 +63,7 @@ export default function AutomationShow() {
           <div className="flex items-center space-x-4">
             <div className="max-w-2xl text-sm text-gray-500">
               Targeting{' '}
-              <Link href={`/${automation.source_table}/?id=${id}`}><a className="text-blue-600">{automation.source_count} entries</a></Link>{' '}
+              <Link href={`/${automation.source_container}/?id=${id}`}><a className="text-blue-600">{automation.source_count} entries</a></Link>{' '}
               currently
             </div>
             <button onClick={runAutomation} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm rounded-md text-white bg-gray-600 hover:bg-gray-700 sm:mt-0 sm:w-auto">
@@ -72,7 +76,7 @@ export default function AutomationShow() {
           <dl className="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
             <div className="sm:col-span-1">
               <dt className="text-sm font-medium text-gray-500">Source Table</dt>
-              <dd className="mt-1 text-sm text-gray-900">{automation.source_table}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{automation.source_container}</dd>
             </div>
             <div className="sm:col-span-1">
               <dt className="text-sm font-medium text-gray-500">Source Tags</dt>
@@ -83,7 +87,7 @@ export default function AutomationShow() {
             </div>
             <div className="sm:col-span-1">
               <dt className="text-sm font-medium text-gray-500">Destination Table</dt>
-              <dd className="mt-1 text-sm text-gray-900">{automation.destination_table}</dd>
+              <dd className="mt-1 text-sm text-gray-900">{automation.destination_container}</dd>
             </div>
             <div className="sm:col-span-1">
               <dt className="text-sm font-medium text-gray-500">Destionation Tags</dt>
@@ -101,10 +105,7 @@ export default function AutomationShow() {
           </dl>
         </div>
 
-        <div className="p-5">
-          <h3 className="mb-5 text-lg leading-6 font-medium text-gray-900">Recent runs</h3>
-          <AutomationRunsTable automationId={automation.id} />
-        </div>
+        {tableMemo}
       </Layout>
     </>
   )

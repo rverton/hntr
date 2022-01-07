@@ -194,7 +194,7 @@ function AutomationRow({ automation, linkTo, handler }) {
                 <div className="hidden md:block">
                   <div>
                     <p className="text-sm text-gray-900">
-                      From <span className="font-bold">{automation.source_table}</span>
+                      From <span className="font-bold">{automation.source_container}</span>
                     </p>
                     <div className="mt-2 flex items-center text-sm text-gray-500">
                       <div>
@@ -207,7 +207,7 @@ function AutomationRow({ automation, linkTo, handler }) {
                 <div className="hidden md:block">
                   <div>
                     <p className="text-sm text-gray-900">
-                      To <span className="font-bold">{automation.destination_table}</span>
+                      To <span className="font-bold">{automation.destination_container}</span>
                     </p>
                     <div className="mt-2 flex items-center text-sm text-gray-500">
                       <div>
