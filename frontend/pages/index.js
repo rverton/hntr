@@ -1,6 +1,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 
+import MarketingLayout from '../components/marketingLayout'
+
 import api from '../lib/api'
 
 export default function Index() {
@@ -18,33 +20,7 @@ export default function Index() {
   }
 
   return (
-    <>
-      <header className="">
-        <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
-          <div className="w-full py-6 flex items-center justify-between border-b border-indigo-500 lg:border-none">
-            <div className="flex w-full justify-between">
-              <div className="hidden space-x-8 lg:block">
-                <Link href="/" className="text-base font-bold text-gray-700" >
-                  [hntr]
-                </Link>
-                <Link passHref href="/box?id=123" className="text-base font-medium text-gray-600 hover:text-gray-500" >
-                  How it works
-                </Link>
-                <Link href="/boxes" className="text-base font-medium text-gray-600 hover:text-gray-500" >
-                  Blog
-                </Link>
-              </div>
-
-              <div className="hidden space-x-8 lg:block">
-                <Link href="#" className="text-base font-medium text-gray-600 hover:text-gray-500" >
-                  About
-                </Link>
-              </div>
-
-            </div>
-          </div>
-        </nav>
-      </header>
+    <MarketingLayout>
 
       <div className="max-w-6xl mx-auto sm:px-6 lg:px-8 p-3">
         <div className="mt-6 space-y-7 w-2/3 mx-auto">
@@ -72,7 +48,7 @@ export default function Index() {
 
       <img src="/screenshot.png" className="w-10/12 mt-5 mx-auto" />
 
-      <div className="max-w-6xl mx-auto my-20 sm:px-6 lg:px-8 p-3">
+      <div id="howitworks" className="max-w-6xl mx-auto my-20 sm:px-6 lg:px-8 p-3">
         <div className="grid grid-cols-3 gap-12">
           <div className="">
             <h2 className="text-center text-xl">Import and Export</h2>
@@ -102,6 +78,6 @@ export default function Index() {
         </div>
       </div>
 
-    </>
+    </MarketingLayout>
   )
 }
