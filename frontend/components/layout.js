@@ -104,6 +104,7 @@ export default function Layout({ children }) {
           <a
             className={classNames(
               "font-medium text-gray-600 w-full px-2 py-1 text-sm hover:bg-gray-100 rounded-sm",
+              numberFormat(count) == numberFormat(limit) ? 'bg-red-700 text-white' : ''
             )}
           >
             {numberFormat(count)} / {numberFormat(limit)} Quota
