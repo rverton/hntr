@@ -59,6 +59,7 @@ export default function Home() {
 
   const tagSelected = () => {
     let tags = prompt(`Choose new tags for ${Object.keys(selected).length} selected entries, separated by ',': `)
+    if (tags === null) return;
 
     api.put(`/box/${id}/${container}/`, {
       records: Object.keys(selected),
@@ -70,6 +71,22 @@ export default function Home() {
       .catch(err => {
         alert(`Could not update records: ${err.response?.data?.error}`)
       })
+  }
+
+  const removeSelected = () => {
+    if (!confirm('Are you sure you want to delete the selected entries?')) return;
+
+    api.put(`/box/${id}/${container}/_deleterecords`, {
+      records: Object.keys(selected),
+    })
+      .then(() => {
+        mutate()
+      })
+      .catch(err => {
+        alert(`Could not delete records: ${err.response?.data?.error}`)
+      })
+
+    setSelected({})
   }
 
   return (
@@ -104,12 +121,14 @@ export default function Home() {
                   {numberFormat(count)} total
                 </div>}
 
-                <LimitSelect limit={limit} setLimit={setLimit} />
                 <SelectedAction
                   records={records}
                   selected={selected}
                   setSelected={setSelected}
-                  tagSelected={tagSelected} />
+                  tagSelected={tagSelected}
+                  removeSelected={removeSelected}
+                />
+                <LimitSelect limit={limit} setLimit={setLimit} />
 
                 <button onClick={() => setShowModalExport(true)} type="submit" className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-2 py-2 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-0">
                   Export
@@ -190,7 +209,7 @@ function RecordsTable({ data, count, selected, setSelected, limit, page, setPage
         <div className="text-center text-bold p-10">No records matching criteria. If you have not yet added data, please use the import function.</div>
       }
 
-      {data && data.length && count > limit &&
+      {data && data.length > 0 && count > limit &&
         <nav
           className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
           aria-label="Pagination"

@@ -278,6 +278,67 @@ func (s *Server) UpdateRecords(c echo.Context) error {
 	return c.JSON(http.StatusOK, nil)
 }
 
+func (s *Server) DeleteRecords(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	container := c.Param("container")
+
+	// ensure box exists
+	box, err := s.repo.GetBox(ctx, id)
+
+	if err == pgx.ErrNoRows {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	if err != nil {
+		log.Printf("getting box failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, box)
+	}
+
+	if !inStringSlice(container, box.Containers) {
+		if err == pgx.ErrNoRows {
+			return c.JSON(http.StatusNotFound, nil)
+		}
+	}
+
+	type DeleteRecords struct {
+		Records []string `json:"records" validate:"required,min=1"`
+	}
+
+	deleteRecords := new(DeleteRecords)
+	if err = c.Bind(deleteRecords); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid data",
+		})
+	}
+
+	if err = c.Validate(deleteRecords); err != nil {
+		errors := err.(validator.ValidationErrors)
+
+		firstError := errors[0]
+
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": fmt.Sprintf("%s: %s", firstError.Field(), validationErrorMsg(firstError)),
+		})
+	}
+
+	if err = s.repo.DeleteRecords(ctx, db.DeleteRecordsParams{
+		BoxID:     box.ID,
+		Container: container,
+		Column3:   deleteRecords.Records,
+	}); err != nil {
+		log.Printf("deleting records failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, box)
+	}
+
+	return c.JSON(http.StatusOK, nil)
+}
+
 func parseTerm(term string) (string, []string) {
 
 	tags := make([]string, 0)

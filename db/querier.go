@@ -15,6 +15,7 @@ type Querier interface {
 	CreateAutomationEvent(ctx context.Context, arg CreateAutomationEventParams) (AutomationEvent, error)
 	CreateBox(ctx context.Context, arg CreateBoxParams) (Box, error)
 	CreateRecord(ctx context.Context, arg CreateRecordParams) error
+	DeleteRecords(ctx context.Context, arg DeleteRecordsParams) error
 	GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error)
 	GetBox(ctx context.Context, id uuid.UUID) (Box, error)
 	ListAutomationEvents(ctx context.Context, arg ListAutomationEventsParams) ([]AutomationEvent, error)

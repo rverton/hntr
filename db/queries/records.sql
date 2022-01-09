@@ -34,3 +34,9 @@ UPDATE records SET
     tags = $1
 WHERE
     box_id = $2 AND container = $3 AND data = ANY($4::varchar[]);
+
+-- name: DeleteRecords :exec
+DELETE FROM
+    records
+WHERE
+    box_id = $1 AND container = $2 AND data = ANY($3::varchar[]);

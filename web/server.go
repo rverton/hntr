@@ -95,6 +95,7 @@ func NewServer(addr string, recordsLimit int, repo *db.Queries, dbPool *pgxpool.
 	e.GET("/api/box/:id/_count", server.CountRecords)
 	e.GET("/api/box/:id/:container", server.ListRecords)
 	e.POST("/api/box/:id/:container", server.AddRecords)
+	e.PUT("/api/box/:id/:container/_deleterecords", server.DeleteRecords)
 	e.PUT("/api/box/:id/:container", server.UpdateRecords)
 
 	// automations

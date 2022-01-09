@@ -69,6 +69,24 @@ func (q *Queries) CreateRecord(ctx context.Context, arg CreateRecordParams) erro
 	return err
 }
 
+const deleteRecords = `-- name: DeleteRecords :exec
+DELETE FROM
+    records
+WHERE
+    box_id = $1 AND container = $2 AND data = ANY($3::varchar[])
+`
+
+type DeleteRecordsParams struct {
+	BoxID     uuid.UUID `json:"box_id"`
+	Container string    `json:"container"`
+	Column3   []string  `json:"column_3"`
+}
+
+func (q *Queries) DeleteRecords(ctx context.Context, arg DeleteRecordsParams) error {
+	_, err := q.db.Exec(ctx, deleteRecords, arg.BoxID, arg.Container, arg.Column3)
+	return err
+}
+
 const listRecordsByBoxFilter = `-- name: ListRecordsByBoxFilter :many
 SELECT data, tags, box_id, container, created_at FROM records WHERE 
     box_id = $1 AND
