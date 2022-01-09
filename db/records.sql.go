@@ -75,7 +75,7 @@ SELECT data, tags, box_id, container, created_at FROM records WHERE
     container = $2 AND
     $3::varchar[] <@ tags AND
     data LIKE $4 
-ORDER BY created_at DESC
+ORDER BY created_at, data, tags DESC
 `
 
 type ListRecordsByBoxFilterParams struct {
@@ -122,7 +122,7 @@ SELECT data, tags, box_id, container, created_at FROM records WHERE
     container = $2 AND
     $3::varchar[] <@ tags AND
     data LIKE $4
-ORDER BY created_at DESC
+ORDER BY created_at, data, tags DESC
 LIMIT $5 OFFSET $6
 `
 
@@ -170,7 +170,7 @@ func (q *Queries) ListRecordsByBoxFilterPaginated(ctx context.Context, arg ListR
 
 const updateRecordTags = `-- name: UpdateRecordTags :exec
 UPDATE records SET
-    tags=$1
+    tags = $1
 WHERE
     box_id = $2 AND container = $3 AND data = ANY($4::varchar[])
 `

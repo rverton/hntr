@@ -148,7 +148,12 @@ func (s *Server) AddRecords(c echo.Context) error {
 		}
 
 		batch.Queue(
-			"INSERT INTO records (box_id, container, data, tags) VALUES ($1, $2, $3, $4)",
+			`INSERT INTO 
+                records (box_id, container, data, tags)
+            VALUES 
+                ($1, $2, $3, $4)
+			ON CONFLICT (box_id, container, data) DO UPDATE
+			SET tags = excluded.tags`,
 			id,
 			container,
 			line,
@@ -164,6 +169,7 @@ func (s *Server) AddRecords(c echo.Context) error {
 	for i = 0; i < added; i++ {
 		ct, err := br.Exec()
 		if err != nil {
+			log.Println(err)
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
 				if pgErr.Code != "23505" {

@@ -19,6 +19,10 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
+
+const numberFormat = n => new Intl.NumberFormat().format(n)
+const numberFormatSummary = num => Math.abs(num) > 999 ? Math.sign(num) * ((Math.abs(num) / 1000).toFixed(1)) + 'k' : Math.sign(num) * Math.abs(num)
+
 const LIMIT = 500
 
 export default function Home() {
@@ -31,7 +35,8 @@ export default function Home() {
   const [selected, setSelected] = useState({})
   const [filter, setFilter] = useState("")
   const [limit, setLimit] = useState(LIMIT)
-  const { records, count, mutate, isLoading, isError } = useRecords(id, container, filter, limit)
+  const [page, setPage] = useState(0)
+  const { records, count, mutate, isLoading, isError } = useRecords(id, container, filter, limit, page)
 
   const tableMemo = useMemo(() => {
     return <RecordsTable
@@ -39,6 +44,10 @@ export default function Home() {
       isLoading={isLoading}
       selected={selected}
       setSelected={setSelected}
+      page={page}
+      setPage={setPage}
+      count={count}
+      limit={limit}
     />;
   }, [records, isLoading, selected])
 
@@ -47,8 +56,6 @@ export default function Home() {
       setFilter(filterInput)
     }
   }
-
-  const numberFormat = n => new Intl.NumberFormat().format(n)
 
   const tagSelected = () => {
     let tags = prompt(`Choose new tags for ${Object.keys(selected).length} selected entries, separated by ',': `)
@@ -130,7 +137,7 @@ export default function Home() {
   )
 }
 
-function RecordsTable({ data, selected, setSelected }) {
+function RecordsTable({ data, count, selected, setSelected, limit, page, setPage }) {
   const toggleRowSelection = (event, data) => {
     if (!event.altKey) return;
 
@@ -182,6 +189,39 @@ function RecordsTable({ data, selected, setSelected }) {
         data && !data.length &&
         <div className="text-center text-bold p-10">No records matching criteria. If you have not yet added data, please use the import function.</div>
       }
+
+      {data && data.length && count > limit &&
+        <nav
+          className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6"
+          aria-label="Pagination"
+        >
+          <div className="hidden sm:block">
+            <p className="text-sm text-gray-700">
+              Showing <span className="font-medium">{(page * limit) || 1}</span> to <span className="font-medium">{(page + 1) * limit}</span> of{' '}
+              <span className="font-medium">{numberFormat(count)}</span> results
+            </p>
+          </div>
+          <div className="flex-1 flex justify-between sm:justify-end">
+            <button
+              onClick={() => {
+                let newPage = page - 1;
+                if (newPage < 0) newPage = 0;
+                setPage(newPage)
+              }}
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => setPage(page + 1)}
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+            >
+              Next
+            </button>
+          </div>
+        </nav>
+      }
+
     </div>
 
   )

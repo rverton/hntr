@@ -4,7 +4,7 @@ SELECT * FROM records WHERE
     container = $2 AND
     $3::varchar[] <@ tags AND
     data LIKE $4 
-ORDER BY created_at DESC;
+ORDER BY created_at, data, tags DESC;
 
 -- name: ListRecordsByBoxFilterPaginated :many
 SELECT * FROM records WHERE 
@@ -12,7 +12,7 @@ SELECT * FROM records WHERE
     container = $2 AND
     $3::varchar[] <@ tags AND
     data LIKE $4
-ORDER BY created_at DESC
+ORDER BY created_at, data, tags DESC
 LIMIT $5 OFFSET $6;
 
 -- name: CountRecordsByBoxFilter :one
