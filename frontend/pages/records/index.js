@@ -11,6 +11,7 @@ import LimitSelect from '../../components/limitSelect'
 import SelectedAction from '../../components/selectedAction'
 
 import useRecords from '../../hooks/useRecords'
+import api from '../../lib/api'
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
@@ -30,7 +31,7 @@ export default function Home() {
   const [selected, setSelected] = useState({})
   const [filter, setFilter] = useState("")
   const [limit, setLimit] = useState(LIMIT)
-  const { records, count, isLoading, isError } = useRecords(id, container, filter, limit)
+  const { records, count, mutate, isLoading, isError } = useRecords(id, container, filter, limit)
 
   const tableMemo = useMemo(() => {
     return <RecordsTable
@@ -41,13 +42,28 @@ export default function Home() {
     />;
   }, [records, isLoading, selected])
 
-  function handleSubmit(e) {
+  const handleSubmit = (e) => {
     if (e.key == 'Enter') {
       setFilter(filterInput)
     }
   }
 
   const numberFormat = n => new Intl.NumberFormat().format(n)
+
+  const tagSelected = () => {
+    let tags = prompt(`Choose new tags for ${Object.keys(selected).length} selected entries, separated by ',': `)
+
+    api.put(`/box/${id}/${container}/`, {
+      records: Object.keys(selected),
+      tags: tags.split(',')
+    })
+      .then(() => {
+        mutate()
+      })
+      .catch(err => {
+        alert(`Could not update records: ${err.response?.data?.error}`)
+      })
+  }
 
   return (
     <>
@@ -82,7 +98,11 @@ export default function Home() {
                 </div>}
 
                 <LimitSelect limit={limit} setLimit={setLimit} />
-                <SelectedAction records={records} selected={selected} setSelected={setSelected} />
+                <SelectedAction
+                  records={records}
+                  selected={selected}
+                  setSelected={setSelected}
+                  tagSelected={tagSelected} />
 
                 <button onClick={() => setShowModalExport(true)} type="submit" className="inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-2 py-2 bg-white text-xs font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-0">
                   Export

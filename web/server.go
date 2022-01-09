@@ -21,6 +21,10 @@ import (
 
 var ShutdownTimeout = 2 * time.Second
 
+const LIMIT_MAX = 50000
+const LIMIT_RECORDS = 100000
+const TAGS_MAX = 10
+
 type Server struct {
 	server *echo.Echo
 	addr   string
@@ -91,6 +95,7 @@ func NewServer(addr string, recordsLimit int, repo *db.Queries, dbPool *pgxpool.
 	e.GET("/api/box/:id/_count", server.CountRecords)
 	e.GET("/api/box/:id/:container", server.ListRecords)
 	e.POST("/api/box/:id/:container", server.AddRecords)
+	e.PUT("/api/box/:id/:container", server.UpdateRecords)
 
 	// automations
 	e.GET("/api/box/:id/automations", server.ListAutomations)

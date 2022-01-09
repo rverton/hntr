@@ -16,8 +16,6 @@ import (
 	"github.com/vgarvardt/gue/v3"
 )
 
-const TAGS_MAX = 20
-
 type AutomationHostnameCount struct {
 	db.Automation
 	SourceCount int64 `json:"source_count"`

@@ -5,7 +5,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function SelectedActionDropdown({ records, selected, setSelected }) {
+export default function SelectedActionDropdown({ records, selected, setSelected, tagSelected }) {
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
@@ -29,6 +29,7 @@ export default function SelectedActionDropdown({ records, selected, setSelected 
               {({ active }) => (
                 <a
                   href="#"
+                  onClick={tagSelected}
                   className={classNames(
                     active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                     'block px-4 py-2 text-sm'

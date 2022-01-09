@@ -1,5 +1,5 @@
 CREATE TABLE records (
-    data            text NOT NULL,
+    data            VARCHAR(250) NOT NULL,
     tags            VARCHAR(50)[],
 
     box_id          uuid NOT NULL,

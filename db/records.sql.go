@@ -167,3 +167,27 @@ func (q *Queries) ListRecordsByBoxFilterPaginated(ctx context.Context, arg ListR
 	}
 	return items, nil
 }
+
+const updateRecordTags = `-- name: UpdateRecordTags :exec
+UPDATE records SET
+    tags=$1
+WHERE
+    box_id = $2 AND container = $3 AND data = ANY($4::varchar[])
+`
+
+type UpdateRecordTagsParams struct {
+	Tags      []string  `json:"tags"`
+	BoxID     uuid.UUID `json:"box_id"`
+	Container string    `json:"container"`
+	Column4   []string  `json:"column_4"`
+}
+
+func (q *Queries) UpdateRecordTags(ctx context.Context, arg UpdateRecordTagsParams) error {
+	_, err := q.db.Exec(ctx, updateRecordTags,
+		arg.Tags,
+		arg.BoxID,
+		arg.Container,
+		arg.Column4,
+	)
+	return err
+}

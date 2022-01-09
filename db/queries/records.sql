@@ -28,3 +28,9 @@ SELECT count(*) FROM records WHERE
 
 -- name: CreateRecord :exec
 INSERT INTO records (data, tags, box_id, container) VALUES ($1, $2, $3, $4);
+
+-- name: UpdateRecordTags :exec
+UPDATE records SET
+    tags = $1
+WHERE
+    box_id = $2 AND container = $3 AND data = ANY($4::varchar[]);

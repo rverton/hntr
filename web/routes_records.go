@@ -2,6 +2,8 @@ package web
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"hntr/db"
 	"io"
 	"log"
@@ -9,13 +11,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/jackc/pgconn"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 )
-
-const LIMIT_MAX = 50000
-const LIMIT_RECORDS = 100000
 
 func (s *Server) ListRecords(c echo.Context) error {
 	ctx := context.Background()
@@ -112,6 +113,27 @@ func (s *Server) AddRecords(c echo.Context) error {
 		return c == ','
 	})
 
+	type AddRecordTags struct {
+		Tags []string `json:"tags" validate:"required,max=10,dive,max=50"`
+	}
+
+	if err = c.Validate(AddRecordTags{Tags: tags}); err != nil {
+		errors := err.(validator.ValidationErrors)
+		firstError := errors[0]
+
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": fmt.Sprintf("%s: %s", firstError.Field(), validationErrorMsg(firstError)),
+		})
+	}
+
+	tags = cleanTags(tags)
+
+	if len(tags) > TAGS_MAX {
+		return c.JSON(http.StatusNotAcceptable, map[string]string{
+			"error": fmt.Sprintf("too many tags. MAX_TAGS=%v", TAGS_MAX),
+		})
+	}
+
 	var added int64
 	batch := &pgx.Batch{}
 
@@ -142,14 +164,24 @@ func (s *Server) AddRecords(c echo.Context) error {
 	for i = 0; i < added; i++ {
 		ct, err := br.Exec()
 		if err != nil {
-			log.Printf("error executing batch: %v", err)
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) {
+				if pgErr.Code != "23505" {
+					log.Printf("unable to exec batch insert: %v", pgErr)
+				}
+			}
 		}
 
 		affected += ct.RowsAffected()
 	}
 
 	if err := br.Close(); err != nil {
-		log.Printf("closing failed: %v", err)
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			if pgErr.Code != "23505" {
+				log.Printf("unable to exec batch insert: %v", pgErr)
+			}
+		}
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
@@ -177,6 +209,69 @@ func (s *Server) CountRecords(c echo.Context) error {
 	})
 }
 
+func (s *Server) UpdateRecords(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	container := c.Param("container")
+
+	// ensure box exists
+	box, err := s.repo.GetBox(ctx, id)
+
+	if err == pgx.ErrNoRows {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	if err != nil {
+		log.Printf("getting box failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, box)
+	}
+
+	if !inStringSlice(container, box.Containers) {
+		if err == pgx.ErrNoRows {
+			return c.JSON(http.StatusNotFound, nil)
+		}
+	}
+
+	type UpdateRecords struct {
+		Records []string `json:"records" validate:"required,min=1"`
+		Tags    []string `json:"tags" validate:"required,max=10,dive,max=50"`
+	}
+
+	updateRecords := new(UpdateRecords)
+	if err = c.Bind(updateRecords); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid data",
+		})
+	}
+
+	if err = c.Validate(updateRecords); err != nil {
+		errors := err.(validator.ValidationErrors)
+
+		firstError := errors[0]
+
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": fmt.Sprintf("%s: %s", firstError.Field(), validationErrorMsg(firstError)),
+		})
+	}
+
+	if err = s.repo.UpdateRecordTags(ctx, db.UpdateRecordTagsParams{
+		Tags:      cleanTags(updateRecords.Tags),
+		BoxID:     box.ID,
+		Container: container,
+		Column4:   updateRecords.Records,
+	}); err != nil {
+		log.Printf("getting box failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, box)
+	}
+
+	return c.JSON(http.StatusOK, nil)
+}
+
 func parseTerm(term string) (string, []string) {
 
 	tags := make([]string, 0)
@@ -201,4 +296,16 @@ func parseTerm(term string) (string, []string) {
 	}
 
 	return searchword, tags
+}
+
+func cleanTags(tags []string) []string {
+	cleaned := make([]string, 0)
+	for _, t := range tags {
+		if t == "" {
+			continue
+		}
+		cleaned = append(cleaned, t)
+	}
+
+	return cleaned
 }
