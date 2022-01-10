@@ -153,7 +153,8 @@ func (s *Server) AddRecords(c echo.Context) error {
             VALUES 
                 ($1, $2, $3, $4)
 			ON CONFLICT (box_id, container, data) DO UPDATE
-			SET tags = excluded.tags`,
+			SET tags = excluded.tags
+            WHERE records.tags != excluded.tags`,
 			id,
 			container,
 			line,
@@ -191,7 +192,7 @@ func (s *Server) AddRecords(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]interface{}{
-		"added": affected,
+		"changed": affected,
 	})
 }
 
