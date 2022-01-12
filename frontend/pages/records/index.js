@@ -2,7 +2,7 @@ import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { format, parseISO } from 'date-fns'
 
-import { Fragment, useRef, useState, useMemo } from 'react'
+import { Fragment, useRef, useState, useMemo, useEffect } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 
 import Layout from '../../components/layout'
@@ -51,9 +51,15 @@ export default function Home() {
     />;
   }, [records, isLoading, selected])
 
+  useEffect(() => {
+    setFilter(router.query.term)
+    setFilterInput(router.query.term)
+  }, [router.query.term])
+
   const handleSubmit = (e) => {
     if (e.key == 'Enter') {
       setFilter(filterInput)
+      router.push(`${router.pathname}?id=${id}&container=${container}&term=${filterInput}`, undefined, { shallow: true })
     }
   }
 

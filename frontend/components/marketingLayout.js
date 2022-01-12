@@ -1,9 +1,26 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
+
+import api from '../lib/api'
 
 export default function MarketingLayout({ children }) {
+  const router = useRouter()
+
+  const createBox = () => {
+    api.post('/box/create')
+      .then(resp => {
+        router.push(`/records/?id=${resp.data.id}&container=hostnames`)
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Error. Please try again later')
+      })
+  }
+
   return (
     <>
-      <header className="">
+      <div className="absolute top-0 left-0 w-full h-[36rem] bg-gradient-to-b from-orange-100 -z-10"></div>
+      <header className="z-10">
         <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
           <div className="w-full py-6 flex items-center justify-between border-b border-indigo-500 lg:border-none">
             <div className="flex w-full justify-between">
@@ -14,15 +31,10 @@ export default function MarketingLayout({ children }) {
               </div>
 
               <div className="hidden space-x-8 lg:block">
-                <Link href="/#howitworks" className="text-base font-medium text-gray-600 hover:text-gray-500" >
-                  How it works
-                </Link>
                 <Link href="/docs" className="text-base font-medium text-gray-600 hover:text-gray-500" >
-                  Documentation
+                  <a className="font-medium">Docs</a>
                 </Link>
-                <Link href="/boxes" className="text-base font-medium text-gray-600 hover:text-gray-500" >
-                  Blog
-                </Link>
+                <a href="#" className="font-medium" onClick={createBox}> Create a box</a>
               </div>
 
             </div>

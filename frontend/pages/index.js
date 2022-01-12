@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 
 import MarketingLayout from '../components/marketingLayout'
@@ -46,7 +45,7 @@ export default function Index() {
         </div>
       </div>
 
-      <img src="/screenshot.png" className="w-10/12 mt-5 mx-auto" />
+      <img src="/screenshot.png" className="w-8/12 border shadow mt-8 mx-auto" />
 
       <div id="howitworks" className="max-w-6xl mx-auto my-20 sm:px-6 lg:px-8 p-3">
         <div className="grid grid-cols-3 gap-12">
