@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"log"
 	"os"
@@ -69,33 +68,4 @@ func main() {
 	if err := server.Start(); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func seedDb(repo *db.Queries) error {
-
-	ctx := context.Background()
-
-	box, err := repo.CreateBox(ctx, db.CreateBoxParams{
-		Name: "Public Library",
-	})
-	if err != nil {
-		return err
-	}
-
-	_, err = repo.CreateAutomation(ctx, db.CreateAutomationParams{
-		Name:                 "amass",
-		Description:          "Run amass on your defined scope domains to gather subdomains (passive) and feed them back into your hostnames table",
-		BoxID:                box.ID,
-		Command:              "amass enum -passive -d {data}",
-		SourceContainer:      "hostnames",
-		SourceTags:           []string{"is_scope"},
-		DestinationContainer: "hostnames",
-		DestinationTags:      []string{"source:amass"},
-		IsPublic:             true,
-	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }

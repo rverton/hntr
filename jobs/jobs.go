@@ -8,7 +8,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/vgarvardt/gue/v3"
@@ -50,36 +49,6 @@ var finishedJobsLog = func(ctx context.Context, j *gue.Job, err error) {
 	}
 }
 
-type RunAutomationArgs struct {
-	JobID      uuid.UUID
-	Automation db.Automation
-	Data       string
-}
-
-type Jobserver struct {
-	repo *db.Queries
-}
-
-func (js *Jobserver) RunAutomation(ctx context.Context, j *gue.Job) error {
-	var args RunAutomationArgs
-	if err := json.Unmarshal(j.Args, &args); err != nil {
-		return err
-	}
-
-	if err := js.repo.UpdateAutomationEventStatusStarted(ctx, args.JobID); err != nil {
-		log.Printf("error updating job status: %v", err)
-	}
-
-	// create command and run
-	log.Printf("running %v with %v", args.Automation.Command, args.Data)
-
-	if err := js.repo.UpdateAutomationEventStatusFinished(ctx, args.JobID); err != nil {
-		log.Printf("error updating job status: %v", err)
-	}
-
-	return nil
-}
-
 func Init(dbUrl string, repo *db.Queries) (*gue.Client, context.CancelFunc) {
 	pgxCfg, err := pgxpool.ParseConfig(dbUrl)
 	if err != nil {
@@ -98,7 +67,8 @@ func Init(dbUrl string, repo *db.Queries) (*gue.Client, context.CancelFunc) {
 	gc := gue.NewClient(poolAdapter)
 
 	js := Jobserver{
-		repo: repo,
+		repo:   repo,
+		dbPool: pgxPool,
 	}
 
 	wm := gue.WorkMap{
@@ -106,7 +76,7 @@ func Init(dbUrl string, repo *db.Queries) (*gue.Client, context.CancelFunc) {
 	}
 
 	// create a pool w/ 2 workers
-	workers := gue.NewWorkerPool(gc, wm, 2, gue.WithPoolPollInterval(time.Second*1), gue.WithPoolHooksJobDone(finishedJobsLog))
+	workers := gue.NewWorkerPool(gc, wm, 10, gue.WithPoolPollInterval(time.Second*1))
 
 	ctx, shutdown := context.WithCancel(context.Background())
 

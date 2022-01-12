@@ -58,7 +58,21 @@ export default function AutomationShow() {
       })
   }
 
+  const removeAutomation = () => {
+    if (!confirm("Are you sure to remove to automation and all associated runs?")) return;
+
+    api.delete(`/automations/${aid}`)
+      .then(() => {
+        router.push(`/automations/?id=${id}`)
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Error. Please try again later')
+      })
+  }
+
   if (isError) return <div>An error occured loading the data.</div>
+  if (isLoading) return <div>Loading</div>
 
   return (
     <>
@@ -92,8 +106,8 @@ export default function AutomationShow() {
             <span className="px-1 font-mono text-sm bg-gray-200 rounded mr-1">{automation.source_container}</span>
             filtered by
             <span className="px-1 font-mono text-sm bg-gray-200 rounded ml-1">
-              {automation.source_tags}
-              {automation?.source_tag?.length <= 0 && <>No tags</>}
+              {automation.source_tags?.join(' ')}
+              {automation.source_tags?.length == 0 && <>No tags</>}
             </span>
           </div>
 
@@ -102,14 +116,18 @@ export default function AutomationShow() {
             <span className="px-1 font-mono text-sm bg-gray-200 rounded mr-1">{automation.destination_container}</span>
             adding tags
             <span className="px-1 font-mono text-sm bg-gray-200 rounded ml-1">
-              {automation.destination_tags}
-              {automation?.destination_tags?.length <= 0 && <>No tags</>}
+              {automation.destination_tags?.join(' ')}
+              {automation.destination_tags?.length <= 0 && <>No tags</>}
             </span>
           </div>
 
           <div className="flex">
             <div className="w-32 font-medium text-sm">Command:</div>
             <span className="px-1 font-mono">{automation.command}</span>
+          </div>
+
+          <div class="pt-3">
+            <a onClick={removeAutomation} href="#" className="font-medium underline decoration-dotted">Remove automation</a>
           </div>
 
         </div>
@@ -154,7 +172,7 @@ function AutomationRunsTable({ automationId }) {
                     Finished
                   </th>
                   <th className="w-2/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
-                    Unique Results
+                    Added/Changed
                   </th>
                   <th className="w-7/12 text-sm bg-gray-100 text-gray-700 font-medium border-b border-t border-gray-200 text-left py-1 px-2">
                     Data
@@ -171,7 +189,7 @@ function AutomationRunsTable({ automationId }) {
                     <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">
                       {event.finished_at.Valid && format(parseISO(event.finished_at.Time), 'yy-MM-dd HH:mm:ss')}
                     </td>
-                    <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">{event.unique_results}</td>
+                    <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">{event.affected_rows}</td>
                     <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">{event.data}</td>
                   </tr>
                 ))}

@@ -12,14 +12,14 @@ SELECT * FROM automations WHERE id = $1 LIMIT 1;
 
 -- name: CreateAutomationEvent :one
 INSERT INTO automation_events (
-    box_id, automation_id, data, status, unique_results
+    box_id, automation_id, data, status, affected_rows
 ) VALUES ($1, $2, $3, $4, $5) RETURNING *; 
 
--- name: UpdateAutomationEventStatusStarted :exec
-UPDATE automation_events SET status = 'started' where id = $1;
+-- name: UpdateAutomationEventStatus :exec
+UPDATE automation_events SET status = $1 where id = $2;
 
 -- name: UpdateAutomationEventStatusFinished :exec
-UPDATE automation_events SET status = 'finished', finished_at = now() where id = $1;
+UPDATE automation_events SET status = $1, affected_rows = $2, finished_at = now() where id = $3;
 
 -- name: ListAutomationEvents :many
 SELECT * FROM automation_events WHERE automation_id = $1 ORDER BY created_at DESC LIMIT $2;
@@ -28,3 +28,6 @@ SELECT * FROM automation_events WHERE automation_id = $1 ORDER BY created_at DES
 INSERT INTO automations (
     name, description, box_id, command, source_container, source_tags, destination_container, destination_tags, is_public
 ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
+
+-- name: DeleteAutomation :exec
+DELETE FROM automations WHERE id = $1;

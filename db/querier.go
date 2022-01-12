@@ -15,6 +15,7 @@ type Querier interface {
 	CreateAutomationEvent(ctx context.Context, arg CreateAutomationEventParams) (AutomationEvent, error)
 	CreateBox(ctx context.Context, arg CreateBoxParams) (Box, error)
 	CreateRecord(ctx context.Context, arg CreateRecordParams) error
+	DeleteAutomation(ctx context.Context, id uuid.UUID) error
 	DeleteRecords(ctx context.Context, arg DeleteRecordsParams) error
 	GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error)
 	GetBox(ctx context.Context, id uuid.UUID) (Box, error)
@@ -24,8 +25,8 @@ type Querier interface {
 	ListBoxes(ctx context.Context) ([]Box, error)
 	ListRecordsByBoxFilter(ctx context.Context, arg ListRecordsByBoxFilterParams) ([]Record, error)
 	ListRecordsByBoxFilterPaginated(ctx context.Context, arg ListRecordsByBoxFilterPaginatedParams) ([]Record, error)
-	UpdateAutomationEventStatusFinished(ctx context.Context, id uuid.UUID) error
-	UpdateAutomationEventStatusStarted(ctx context.Context, id uuid.UUID) error
+	UpdateAutomationEventStatus(ctx context.Context, arg UpdateAutomationEventStatusParams) error
+	UpdateAutomationEventStatusFinished(ctx context.Context, arg UpdateAutomationEventStatusFinishedParams) error
 	UpdateBox(ctx context.Context, arg UpdateBoxParams) error
 	UpdateRecordTags(ctx context.Context, arg UpdateRecordTagsParams) error
 }

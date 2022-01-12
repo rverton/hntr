@@ -186,7 +186,7 @@ function RecordsTable({ data, count, selected, setSelected, limit, page, setPage
             {format(parseISO(record.created_at), 'yy-MM-dd HH:mm:ss')}
           </div>
 
-          <div className="text-gray-600 w-1/4 truncate">
+          <div className="text-gray-600 w-1/2 truncate">
             {record.data}
           </div>
 

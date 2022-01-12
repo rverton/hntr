@@ -116,7 +116,7 @@ function AutomationRow({ automation, linkTo, handler }) {
                       From <span className="font-bold">{automation.source_container}</span>
                     </p>
                     <div className="mt-2 flex items-center text-sm text-gray-500">
-                      <div>
+                      <div className="flex space-x-1">
                         {automation.source_tags.map(t => <Tag key={t} name={t} />)}
                         {automation.source_tags.length == 0 && <div>All tags</div>}
                       </div>
@@ -129,7 +129,7 @@ function AutomationRow({ automation, linkTo, handler }) {
                       To <span className="font-bold">{automation.destination_container}</span>
                     </p>
                     <div className="mt-2 flex items-center text-sm text-gray-500">
-                      <div>
+                      <div className="flex space-x-1">
                         {automation.destination_tags.map(t => <Tag key={t} name={t} />)}
                         {automation.destination_tags.length == 0 && <div>No tags</div>}
                       </div>
@@ -297,24 +297,17 @@ function AutomationsAddModal({ showModal, setShowModal, box, automationsMutate }
               <div className="sm:flex sm:items-start">
                 <div className="w-full mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                   <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
-                    Add automation
+                    Add automation to your box
                   </Dialog.Title>
-                  <div className="mt-2">
+                  <div className="">
 
                     <form onSubmit={handleSubmit(submitHandler)} className="space-y-8 divide-y divide-gray-200">
                       <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
 
-                        <div className="pt-8 space-y-6 sm:pt-10 sm:space-y-5">
-                          <div className="space-y-6 sm:space-y-5">
+                        <div className="pt-2 space-y-6 sm:space-y-5">
+                          <div className="space-y-6 sm:space-y-1">
 
-                            <div>
-                              <h3 className="text-lg leading-6 font-medium text-gray-900">General Data</h3>
-                              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                                General data about your automation
-                              </p>
-                            </div>
-
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
                               <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                 Name
                               </label>
@@ -328,7 +321,7 @@ function AutomationsAddModal({ showModal, setShowModal, box, automationsMutate }
                               </div>
                             </div>
 
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
                               <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                 Description
                               </label>
@@ -344,14 +337,14 @@ function AutomationsAddModal({ showModal, setShowModal, box, automationsMutate }
                               </div>
                             </div>
 
-                            <div className="pt-10">
+                            <div className="pt-6">
                               <h3 className="text-lg leading-6 font-medium text-gray-900">Source Data</h3>
                               <p className="mt-1 max-w-2xl text-sm text-gray-500">
                                 Define which records should be loaded and how they should be filtered
                               </p>
                             </div>
 
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
                               <label htmlFor="country" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                 Source Container
                               </label>
@@ -366,7 +359,7 @@ function AutomationsAddModal({ showModal, setShowModal, box, automationsMutate }
                               </div>
                             </div>
 
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
                               <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                 Source Tags
                               </label>
@@ -381,14 +374,14 @@ function AutomationsAddModal({ showModal, setShowModal, box, automationsMutate }
                               </div>
                             </div>
 
-                            <div className="pt-10">
+                            <div className="pt-6">
                               <h3 className="text-lg leading-6 font-medium text-gray-900">Destination Data</h3>
                               <p className="mt-1 max-w-2xl text-sm text-gray-500">
                                 Define where results should be stored and how they should be tagged
                               </p>
                             </div>
 
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
                               <label htmlFor="country" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                 Destination Container
                               </label>
@@ -403,7 +396,7 @@ function AutomationsAddModal({ showModal, setShowModal, box, automationsMutate }
                               </div>
                             </div>
 
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
                               <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                 Destination Tags
                               </label>
@@ -418,14 +411,14 @@ function AutomationsAddModal({ showModal, setShowModal, box, automationsMutate }
                               </div>
                             </div>
 
-                            <div className="pt-10">
+                            <div className="pt-6">
                               <h3 className="text-lg leading-6 font-medium text-gray-900">Command</h3>
                               <p className="mt-1 max-w-2xl text-sm text-gray-500">
                                 Specify the command which should be executed
                               </p>
                             </div>
 
-                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                            <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:pt-5">
                               <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                 Command
                               </label>

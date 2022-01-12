@@ -68,7 +68,7 @@ export default function Index() {
           </div>
           <div className="">
             <h2 className="text-center text-xl">No setup</h2>
-            <p className="pt-2">No registration, no configuration. Create a box and don't waste your time.</p>
+            <p className="pt-2">No registration, no configuration. </p>
           </div>
 
           <div className="">

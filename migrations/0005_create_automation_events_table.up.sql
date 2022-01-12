@@ -5,7 +5,7 @@ CREATE TABLE automation_events (
 
     status          text NOT NULL,
     data            text NOT NULL,
-    unique_results  int NOT NULL default 0,
+    affected_rows   int NOT NULL default 0,
 
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     finished_at TIMESTAMPTZ,

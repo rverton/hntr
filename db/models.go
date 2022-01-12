@@ -25,14 +25,14 @@ type Automation struct {
 }
 
 type AutomationEvent struct {
-	ID            uuid.UUID    `json:"id"`
-	BoxID         uuid.UUID    `json:"box_id"`
-	AutomationID  uuid.UUID    `json:"automation_id"`
-	Status        string       `json:"status"`
-	Data          string       `json:"data"`
-	UniqueResults int32        `json:"unique_results"`
-	CreatedAt     time.Time    `json:"created_at"`
-	FinishedAt    sql.NullTime `json:"finished_at"`
+	ID           uuid.UUID    `json:"id"`
+	BoxID        uuid.UUID    `json:"box_id"`
+	AutomationID uuid.UUID    `json:"automation_id"`
+	Status       string       `json:"status"`
+	Data         string       `json:"data"`
+	AffectedRows int32        `json:"affected_rows"`
+	CreatedAt    time.Time    `json:"created_at"`
+	FinishedAt   sql.NullTime `json:"finished_at"`
 }
 
 type Box struct {

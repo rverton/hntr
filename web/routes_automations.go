@@ -228,6 +228,23 @@ func (s *Server) AddAutomation(c echo.Context) error {
 	return c.JSON(http.StatusOK, automationCreated)
 }
 
+func (s *Server) RemoveAutomation(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id")) // automation id
+	if err != nil {
+		log.Printf("unable to parse id: %v", err)
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	if err = s.repo.DeleteAutomation(ctx, id); err != nil {
+		log.Printf("deleting automation failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusOK, nil)
+}
+
 func inStringSlice(s string, slice []string) bool {
 	for _, s2 := range slice {
 		if s == s2 {

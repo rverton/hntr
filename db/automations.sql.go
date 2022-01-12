@@ -58,16 +58,16 @@ func (q *Queries) CreateAutomation(ctx context.Context, arg CreateAutomationPara
 
 const createAutomationEvent = `-- name: CreateAutomationEvent :one
 INSERT INTO automation_events (
-    box_id, automation_id, data, status, unique_results
-) VALUES ($1, $2, $3, $4, $5) RETURNING id, box_id, automation_id, status, data, unique_results, created_at, finished_at
+    box_id, automation_id, data, status, affected_rows
+) VALUES ($1, $2, $3, $4, $5) RETURNING id, box_id, automation_id, status, data, affected_rows, created_at, finished_at
 `
 
 type CreateAutomationEventParams struct {
-	BoxID         uuid.UUID `json:"box_id"`
-	AutomationID  uuid.UUID `json:"automation_id"`
-	Data          string    `json:"data"`
-	Status        string    `json:"status"`
-	UniqueResults int32     `json:"unique_results"`
+	BoxID        uuid.UUID `json:"box_id"`
+	AutomationID uuid.UUID `json:"automation_id"`
+	Data         string    `json:"data"`
+	Status       string    `json:"status"`
+	AffectedRows int32     `json:"affected_rows"`
 }
 
 func (q *Queries) CreateAutomationEvent(ctx context.Context, arg CreateAutomationEventParams) (AutomationEvent, error) {
@@ -76,7 +76,7 @@ func (q *Queries) CreateAutomationEvent(ctx context.Context, arg CreateAutomatio
 		arg.AutomationID,
 		arg.Data,
 		arg.Status,
-		arg.UniqueResults,
+		arg.AffectedRows,
 	)
 	var i AutomationEvent
 	err := row.Scan(
@@ -85,11 +85,20 @@ func (q *Queries) CreateAutomationEvent(ctx context.Context, arg CreateAutomatio
 		&i.AutomationID,
 		&i.Status,
 		&i.Data,
-		&i.UniqueResults,
+		&i.AffectedRows,
 		&i.CreatedAt,
 		&i.FinishedAt,
 	)
 	return i, err
+}
+
+const deleteAutomation = `-- name: DeleteAutomation :exec
+DELETE FROM automations WHERE id = $1
+`
+
+func (q *Queries) DeleteAutomation(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteAutomation, id)
+	return err
 }
 
 const getAutomation = `-- name: GetAutomation :one
@@ -116,7 +125,7 @@ func (q *Queries) GetAutomation(ctx context.Context, id uuid.UUID) (Automation, 
 }
 
 const listAutomationEvents = `-- name: ListAutomationEvents :many
-SELECT id, box_id, automation_id, status, data, unique_results, created_at, finished_at FROM automation_events WHERE automation_id = $1 ORDER BY created_at DESC LIMIT $2
+SELECT id, box_id, automation_id, status, data, affected_rows, created_at, finished_at FROM automation_events WHERE automation_id = $1 ORDER BY created_at DESC LIMIT $2
 `
 
 type ListAutomationEventsParams struct {
@@ -139,7 +148,7 @@ func (q *Queries) ListAutomationEvents(ctx context.Context, arg ListAutomationEv
 			&i.AutomationID,
 			&i.Status,
 			&i.Data,
-			&i.UniqueResults,
+			&i.AffectedRows,
 			&i.CreatedAt,
 			&i.FinishedAt,
 		); err != nil {
@@ -238,20 +247,31 @@ func (q *Queries) ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Autom
 	return items, nil
 }
 
-const updateAutomationEventStatusFinished = `-- name: UpdateAutomationEventStatusFinished :exec
-UPDATE automation_events SET status = 'finished', finished_at = now() where id = $1
+const updateAutomationEventStatus = `-- name: UpdateAutomationEventStatus :exec
+UPDATE automation_events SET status = $1 where id = $2
 `
 
-func (q *Queries) UpdateAutomationEventStatusFinished(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, updateAutomationEventStatusFinished, id)
+type UpdateAutomationEventStatusParams struct {
+	Status string    `json:"status"`
+	ID     uuid.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateAutomationEventStatus(ctx context.Context, arg UpdateAutomationEventStatusParams) error {
+	_, err := q.db.Exec(ctx, updateAutomationEventStatus, arg.Status, arg.ID)
 	return err
 }
 
-const updateAutomationEventStatusStarted = `-- name: UpdateAutomationEventStatusStarted :exec
-UPDATE automation_events SET status = 'started' where id = $1
+const updateAutomationEventStatusFinished = `-- name: UpdateAutomationEventStatusFinished :exec
+UPDATE automation_events SET status = $1, affected_rows = $2, finished_at = now() where id = $3
 `
 
-func (q *Queries) UpdateAutomationEventStatusStarted(ctx context.Context, id uuid.UUID) error {
-	_, err := q.db.Exec(ctx, updateAutomationEventStatusStarted, id)
+type UpdateAutomationEventStatusFinishedParams struct {
+	Status       string    `json:"status"`
+	AffectedRows int32     `json:"affected_rows"`
+	ID           uuid.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateAutomationEventStatusFinished(ctx context.Context, arg UpdateAutomationEventStatusFinishedParams) error {
+	_, err := q.db.Exec(ctx, updateAutomationEventStatusFinished, arg.Status, arg.AffectedRows, arg.ID)
 	return err
 }
