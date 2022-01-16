@@ -32,7 +32,7 @@ export default function Index() {
           </h2>
           <div className="grid gap-8 items-start justify-center">
             <div className="relative group">
-              <div className="absolute -inset-0.5 bg-red-500 rounded-lg blur-md"></div>
+              <div className="absolute -inset-0.5 bg-orange-800 rounded-lg blur-md"></div>
               <button
                 onClick={createBox}
                 className="relative mx-auto px-7 py-4 bg-black rounded-lg leading-none flex items-center">

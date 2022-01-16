@@ -20,5 +20,5 @@ CREATE TABLE automations (
 
     CONSTRAINT fk_box
       FOREIGN KEY(box_id) 
-	    REFERENCES boxes(id)
+	    REFERENCES boxes(id) ON DELETE CASCADE
 );

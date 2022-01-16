@@ -1,11 +1,9 @@
 package web
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"hntr/db"
-	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -33,6 +31,8 @@ func (s *Server) ListRecords(c echo.Context) error {
 	if limit < 1 || limit > LIMIT_MAX {
 		limit = LIMIT_MAX
 	}
+
+	// TODO: retrieve box and check if container exists
 
 	params := db.ListRecordsByBoxFilterPaginatedParams{
 		BoxID:     id,
@@ -102,11 +102,6 @@ func (s *Server) AddRecords(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, box)
 	}
 
-	b, err := io.ReadAll(c.Request().Body)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, nil)
-	}
-
 	// split tags
 	tags := strings.FieldsFunc(c.QueryParam("tags"), func(c rune) bool {
 		return c == ','
@@ -136,7 +131,7 @@ func (s *Server) AddRecords(c echo.Context) error {
 	affected := db.RecordsBatchInsert(
 		ctx,
 		s.dbPool,
-		bytes.NewReader(b),
+		c.Request().Body,
 		id,
 		container,
 		tags,

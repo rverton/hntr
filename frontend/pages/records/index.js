@@ -52,6 +52,7 @@ export default function Home() {
   }, [records, isLoading, selected])
 
   useEffect(() => {
+    if (!router.query.term) return;
     setFilter(router.query.term)
     setFilterInput(router.query.term)
   }, [router.query.term])

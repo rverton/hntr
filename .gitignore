@@ -1,2 +1,4 @@
 /hntr
 .env
+hntr-worker.stderr.log
+resume.cfg

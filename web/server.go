@@ -100,6 +100,8 @@ func NewServer(addr string, recordsLimit int, repo *db.Queries, dbPool *pgxpool.
 
 	// automations
 	e.GET("/api/box/:id/automations", server.ListAutomations)
+	e.GET("/api/box/:id/_dequeue", server.DequeueJobs)
+	e.POST("/api/box/:id/_results/:jobid", server.UpdateAutomationEvent)
 	e.POST("/api/box/:id/automations", server.AddAutomation)
 	e.GET("/api/automations/:id/events", server.ListAutomationEvents)
 	e.POST("/api/automations/:id/start", server.StartAutomation)

@@ -59,7 +59,7 @@ func (q *Queries) CreateAutomation(ctx context.Context, arg CreateAutomationPara
 const createAutomationEvent = `-- name: CreateAutomationEvent :one
 INSERT INTO automation_events (
     box_id, automation_id, data, status, affected_rows
-) VALUES ($1, $2, $3, $4, $5) RETURNING id, box_id, automation_id, status, data, affected_rows, created_at, finished_at
+) VALUES ($1, $2, $3, $4, $5) RETURNING id, box_id, automation_id, status, data, affected_rows, created_at, started_at, finished_at
 `
 
 type CreateAutomationEventParams struct {
@@ -87,6 +87,7 @@ func (q *Queries) CreateAutomationEvent(ctx context.Context, arg CreateAutomatio
 		&i.Data,
 		&i.AffectedRows,
 		&i.CreatedAt,
+		&i.StartedAt,
 		&i.FinishedAt,
 	)
 	return i, err
@@ -99,6 +100,54 @@ DELETE FROM automations WHERE id = $1
 func (q *Queries) DeleteAutomation(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteAutomation, id)
 	return err
+}
+
+const dequeueAutomationEvents = `-- name: DequeueAutomationEvents :many
+UPDATE automation_events SET
+    status = 'processing', started_at = now()
+WHERE id IN (
+    SELECT id
+    FROM automation_events ae
+    WHERE ae.box_id = $1 AND ae.status = 'scheduled'
+    ORDER BY ae.created_at
+    FOR UPDATE SKIP LOCKED
+    LIMIT $2
+) RETURNING id, box_id, automation_id, status, data, affected_rows, created_at, started_at, finished_at
+`
+
+type DequeueAutomationEventsParams struct {
+	BoxID uuid.UUID `json:"box_id"`
+	Limit int32     `json:"limit"`
+}
+
+func (q *Queries) DequeueAutomationEvents(ctx context.Context, arg DequeueAutomationEventsParams) ([]AutomationEvent, error) {
+	rows, err := q.db.Query(ctx, dequeueAutomationEvents, arg.BoxID, arg.Limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AutomationEvent{}
+	for rows.Next() {
+		var i AutomationEvent
+		if err := rows.Scan(
+			&i.ID,
+			&i.BoxID,
+			&i.AutomationID,
+			&i.Status,
+			&i.Data,
+			&i.AffectedRows,
+			&i.CreatedAt,
+			&i.StartedAt,
+			&i.FinishedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getAutomation = `-- name: GetAutomation :one
@@ -124,8 +173,29 @@ func (q *Queries) GetAutomation(ctx context.Context, id uuid.UUID) (Automation, 
 	return i, err
 }
 
+const getAutomationEvent = `-- name: GetAutomationEvent :one
+SELECT id, box_id, automation_id, status, data, affected_rows, created_at, started_at, finished_at FROM automation_events WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetAutomationEvent(ctx context.Context, id uuid.UUID) (AutomationEvent, error) {
+	row := q.db.QueryRow(ctx, getAutomationEvent, id)
+	var i AutomationEvent
+	err := row.Scan(
+		&i.ID,
+		&i.BoxID,
+		&i.AutomationID,
+		&i.Status,
+		&i.Data,
+		&i.AffectedRows,
+		&i.CreatedAt,
+		&i.StartedAt,
+		&i.FinishedAt,
+	)
+	return i, err
+}
+
 const listAutomationEvents = `-- name: ListAutomationEvents :many
-SELECT id, box_id, automation_id, status, data, affected_rows, created_at, finished_at FROM automation_events WHERE automation_id = $1 ORDER BY created_at DESC LIMIT $2
+SELECT id, box_id, automation_id, status, data, affected_rows, created_at, started_at, finished_at FROM automation_events WHERE automation_id = $1 ORDER BY created_at DESC LIMIT $2
 `
 
 type ListAutomationEventsParams struct {
@@ -150,6 +220,7 @@ func (q *Queries) ListAutomationEvents(ctx context.Context, arg ListAutomationEv
 			&i.Data,
 			&i.AffectedRows,
 			&i.CreatedAt,
+			&i.StartedAt,
 			&i.FinishedAt,
 		); err != nil {
 			return nil, err

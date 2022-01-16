@@ -11,7 +11,7 @@ CREATE TABLE records (
 
     CONSTRAINT fk_box
       FOREIGN KEY(box_id) 
-	    REFERENCES boxes(id)
+	    REFERENCES boxes(id) ON DELETE CASCADE
 );
 
 CREATE INDEX idx_containers_box_type ON records(box_id, container);
