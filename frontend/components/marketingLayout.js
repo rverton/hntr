@@ -40,6 +40,7 @@ export default function MarketingLayout({ children }) {
             </div>
           </div>
         </nav>
+        <script src="https://cdn.usefathom.com/script.js" data-site="DZBNVABI" defer></script>
       </header>
 
       {children}
