@@ -36,7 +36,7 @@ export default function AutomationShow() {
         setAutomation(automation[0])
       }
     }
-  }, [automations])
+  }, [automations, aid])
 
   const runAutomation = () => {
     setDisabled(true);
@@ -126,7 +126,7 @@ export default function AutomationShow() {
             <span className="px-1 font-mono">{automation.command}</span>
           </div>
 
-          <div class="pt-3">
+          <div className="pt-3">
             <a onClick={removeAutomation} href="#" className="font-medium underline decoration-dotted">Remove automation</a>
           </div>
 
@@ -193,7 +193,7 @@ function AutomationRunsTable({ automationId }) {
                     <td className="px-2 py-1 text-sm whitespace-nowrap text-sm text-gray-500">{event.data}</td>
                   </tr>
                 ))}
-                {events && events.length <= 0 && <tr><td colspan="5" className="p-3 text-center">No runs till yet.</td></tr>}
+                {events && events.length <= 0 && <tr><td colSpan="5" className="p-3 text-center">No runs till yet.</td></tr>}
               </tbody>
             </table>
           </div>

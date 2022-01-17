@@ -73,7 +73,7 @@ export default function AutomationsIndex() {
           </div>
         </div>
 
-        <div class="text-center text-gray-500 pt-5">Note: You need to execute the automation worker to process tasks.</div>
+        <div className="text-center text-gray-500 pt-5">Note: You need to execute the automation worker to process tasks.</div>
 
       </Layout>
 
@@ -441,9 +441,9 @@ function AutomationsAddModal({ showModal, setShowModal, box, automationsMutate }
                                   rows={2}
                                   className="max-w-lg shadow-sm block w-full focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm border border-gray-300 rounded-md"
                                   defaultValue={''}
-                                  placeholder="echo '{data}' | subfinder"
+                                  placeholder="echo {data} | subfinder"
                                 />
-                                <p className="mt-2 text-sm text-gray-500">Use <span class="font-mono">{'{'}data{'}'}</span> in your command to be replaced by each record</p>
+                                <p className="mt-2 text-sm text-gray-500">Use <span className="text-xs font-mono">{'{'}data{'}'}</span> in your command to be replaced by each record. This data will be escaped and quoted.</p>
                                 {errors.command && <span className="py-2 text-sm text-red-700">This field is required</span>}
                               </div>
                             </div>
