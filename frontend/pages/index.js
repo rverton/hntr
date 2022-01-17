@@ -55,15 +55,15 @@ export default function Index() {
           </div>
           <div className="">
             <h2 className="text-center text-xl">Tags</h2>
-            <p className="pt-2">Tag complete imports or just specific items. Filter them, export them, use them in workflows.</p>
+            <p className="pt-2">Tag complete imports or just specific items. Filter them, export them, use them in your custom workflows.</p>
           </div>
           <div className="">
             <h2 className="text-xl">Collaboration</h2>
-            <p className="pt-2">Share your box and work together on your target in realtime.</p>
+            <p className="pt-2">Share your box and work together on targets.</p>
           </div>
           <div className="">
             <h2 className="text-center text-xl">Automations</h2>
-            <p className="pt-2">Specify command which are executed on each record of a (filtered) list and feed them back into your own lists.</p>
+            <p className="pt-2">Specify commands which are executed for each record of a (filtered) container and feed results back into a (new) container.</p>
           </div>
           <div className="">
             <h2 className="text-center text-xl">No setup</h2>

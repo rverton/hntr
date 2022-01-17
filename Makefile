@@ -5,7 +5,7 @@ postgres=${POSTGRES_URL}
 
 .PHONY: frontend
 
-all: migrate frontend build
+all: migrate frontend-install frontend build
 
 models:
 	sqlc generate
@@ -32,6 +32,9 @@ watch-frontend:
 db-reset:
 	migrate -verbose -path ./migrations/ -database ${postgres} drop
 	migrate -verbose -path ./migrations/ -database ${postgres} up
+
+frontend-install:
+	cd ./frontend/ && npm install
 
 frontend:
 	cd ./frontend/ && npx next build && npx next export
