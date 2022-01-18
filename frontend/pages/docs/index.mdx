@@ -1,52 +1,72 @@
 import DocsLayout from '../../components/docsLayout'
 import InfoBox from '../../components/infoBox'
+import ExampleButton from '../../components/exampleButton'
+import HighlightWord from '../../components/highlightWord'
 
 <DocsLayout>
 
-## What is hntr.sh?
+## What is hntr?
 
 hntr is a small but powerful tool to gather all information regarding targets.
 Data is organized in **containers**, an each data point is called a **record**.
 
 Each box is only identified with a UUID. Share this URL to work with others
-collaboratively.
+together:
+
+`https://hntr.unlink.io/box/a822fd9e-9ec7-4d68-8e27-00f4259daeda`
 
 To make this really simple to integrate into your toolchain, every container
-list can be filled (and exported from) over HTTP. Example commands for *curl*
-in combination with other tools is given.
+can be filled (and exported from) over HTTP. 
 
-As soon as you have filled your first container, you can create an
-**Automation**, which executes a *Job* for each record in your container. The
+`cat hostnames.txt | curl --data-binary @- "http://localhost:8080/api/box/a822fd9e-9ec7-4d68-8e27-00f4259daeda/hostnames"`
+
+Use the interface to search by tags (`tag:foobar`) or part of the record
+(`.foo.com`). You can select entries (hold the *Alt*-key while clicking) and
+then execute actions on it. Further keyboard shortcuts are a work in progress.
+
+### Automations
+
+As soon as you have filled your first container with some data, you can create an
+**Automation**, which executes a **Job** for each record in your container. The
 command which is executed should then return entries which are filled back into
 a container of your choice (and with tags of your choice).
 
-### A simple usecase for mapping a target infrastructure
+![](/automation-example.png)
+
+Choose example automations from the <ExampleButton>Library</ExampleButton> button or add your own. As soon
+as you have defined an automation and scheduled records for processing, you
+need to run the worker script which will pull jobs from the backend, execute
+them and return back results. Run as much workers as you want. Jobs are only
+delivered once to a worker. You are able to parallelize your workloads this way
+to multiple hosts.
+
+## A simple usecase for mapping a target infrastructure
 
 Let's talk about an example usecase to show the capabilities of what you can
 do.
 
-First, fill your *hostnames* container with some (sub-)domains of your target.
-After creating a box, choose the *Hostnames* container, click the *Import*
-button and copy the given curl command to pipe some domains into your box. We
-will also add a tag `root_scope` to this entries to mark them as our initial
-root domains. This is done by adding a `tags` parameter.
+First, fill your <HighlightWord>Hostnames</HighlightWord> container with some
+(sub-)domains of your target. After creating a box, choose the
+<HighlightWord>Hostnames</HighlightWord> container, click the
+<ExampleButton>Import</ExampleButton> button and copy the given curl command to
+pipe some domains into your box. We will also add a tag `root_scope` to this
+entries to mark them as our initial root domains. This is done by adding a
+`tags` parameter.
 
-```
-cat domains.txt | curl --data-binary @- "http://localhost:8080/api/box/f7a08ee9-6d28-4b3a-8364-526f77578003/hostnames?tags=root_scope"
-```
+`cat domains.txt | curl --data-binary @- "https://hntr.unlink.io/api/box/f7a08ee9-6d28-4b3a-8364-526f77578003/hostnames?tags=root_scope"`
 
 After we have added this data, we can switch over to the **Automations** tab to
-create a simple workflow: For every record in our **Hostnames** container
+create a simple workflow: For every record in our <HighlightWord>Hostnames</HighlightWord> container
 matching the tag `root_scope`, execute [amass](https://github.com/OWASP/Amass)
 and feed the resulting data back into the *Hostnames* container with a new tag
 `source:amass`.
 
-We can now select our imported automation and click on *Start Automation* to schedule
-all records. A job runner will now take every single record and run it with amass.
+We can now select our imported automation and click on <ExampleButton>Start
+Automation</ExampleButton> to schedule all records. A job runner will now take
+every single record and run it with amass.
 
 <InfoBox>
-If you are using our cloud service, you need to execute the job runner on your machine/server for yourself.
-{' '}<a href="#">Read here</a> on how to do this.
+If you are using the cloud service, you need to execute the job runner on your machine/server for yourself.
 </InfoBox>
 
 </DocsLayout>
