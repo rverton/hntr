@@ -11,7 +11,7 @@ export default function Docs({ children }) {
           <ul>
             <li className="pb-3 flex flex-col space-y-2">
               <Link href="/docs">
-                <a href="#" className="font-medium">What is hntr.io?</a>
+                <a href="#" className="font-medium">What is hntr?</a>
               </Link>
             </li>
 
