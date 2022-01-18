@@ -526,7 +526,7 @@ function InstallWorkerModal({ showModal, setShowModal, box }) {
                     </p>
 
                     <div className="font-mono border p-5 text-sm my-3">
-                      <div>wget https://{window.location.host}/worker.sh</div>
+                      <div>wget https://hntr.unlink.io/worker.sh</div>
                       <div>chmod +x worker.sh</div>
                       <div>./worker.sh {box?.id}</div>
                     </div>
