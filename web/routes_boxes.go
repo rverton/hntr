@@ -14,6 +14,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type UpdateBox struct {
+	Name       string   `json:"name" validate:"required,min=2,max=25"`
+	Containers []string `json:"containers" validate:"required,min=1,max=5,dive,min=2,max=25"`
+}
+
 func (s *Server) GetBox(c echo.Context) error {
 	ctx := context.Background()
 
@@ -68,11 +73,6 @@ func (s *Server) UpdateBox(c echo.Context) error {
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, box)
-	}
-
-	type UpdateBox struct {
-		Name       string   `json:"name" validate:"required,min=2,max=25"`
-		Containers []string `json:"containers" validate:"required,min=1,max=5,dive,min=2,max=25"`
 	}
 
 	boxNew := new(UpdateBox)

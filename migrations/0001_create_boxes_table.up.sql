@@ -1,4 +1,4 @@
-/* RUN AS SUPERUSER BEFORE CREATE EXTENSION IF NOT EXISTS "uuid-ossp"; */
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE boxes (
     id          uuid DEFAULT uuid_generate_v4 (),

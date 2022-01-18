@@ -107,6 +107,7 @@ func NewServer(addr string, recordsLimit int, repo *db.Queries, dbPool *pgxpool.
 	e.POST("/api/automations/:id/start", server.StartAutomation)
 	e.GET("/api/automations/library", server.ListAutomationLibrary)
 	e.DELETE("/api/automations/:id", server.RemoveAutomation)
+	e.PUT("/api/automations/:id", server.UpdateAutomation)
 
 	assetHandler := http.FileServer(getFileSystem(frontend.Files, debugMode, e.Logger))
 	e.GET("/*", echo.WrapHandler(assetHandler))

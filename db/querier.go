@@ -27,6 +27,7 @@ type Querier interface {
 	ListBoxes(ctx context.Context) ([]Box, error)
 	ListRecordsByBoxFilter(ctx context.Context, arg ListRecordsByBoxFilterParams) ([]Record, error)
 	ListRecordsByBoxFilterPaginated(ctx context.Context, arg ListRecordsByBoxFilterPaginatedParams) ([]Record, error)
+	UpdateAutomation(ctx context.Context, arg UpdateAutomationParams) error
 	UpdateAutomationEventStatus(ctx context.Context, arg UpdateAutomationEventStatusParams) error
 	UpdateAutomationEventStatusFinished(ctx context.Context, arg UpdateAutomationEventStatusFinishedParams) error
 	UpdateBox(ctx context.Context, arg UpdateBoxParams) error

@@ -81,19 +81,17 @@ func (s *Server) AddRecords(c echo.Context) error {
 	// ensure box exists
 	box, err := s.repo.GetBox(ctx, id)
 
-	if err == pgx.ErrNoRows {
-		return c.JSON(http.StatusNotFound, nil)
-	}
-
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return c.JSON(http.StatusNotFound, nil)
+		}
+
 		log.Printf("getting box failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, box)
 	}
 
 	if !inStringSlice(container, box.Containers) {
-		if err == pgx.ErrNoRows {
-			return c.JSON(http.StatusNotFound, nil)
-		}
+		return c.JSON(http.StatusNotFound, nil)
 	}
 
 	count, err := s.repo.CountRecordsByBox(ctx, id)

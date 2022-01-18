@@ -9,18 +9,29 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4"
 	"github.com/labstack/echo/v4"
 	"gopkg.in/alessio/shellescape.v1"
 )
 
+const REPLACE = "{data}"
+
 type AutomationHostnameCount struct {
 	db.Automation
 	SourceCount int64 `json:"source_count"`
 }
 
-const REPLACE = "{data}"
+type Automation struct {
+	Name                 string   `json:"name" validate:"required,min=1,max=20"`
+	Description          string   `json:"description" validate:"required,min=0,max=200"`
+	Command              string   `json:"command" validate:"required,min=0,max=500"`
+	SourceContainer      string   `json:"source_container" validate:"required,min=0,max=500"`
+	SourceTags           []string `json:"source_tags" validate:"required,max=10,dive,min=1,max=50"`
+	DestinationContainer string   `json:"destination_container" validate:"required,min=0,max=500"`
+	DestinationTags      []string `json:"destination_tags" validate:"required,max=10,dive,min=1,max=50"`
+}
 
 func (s *Server) ListAutomations(c echo.Context) error {
 	ctx := context.Background()
@@ -206,16 +217,30 @@ func (s *Server) StartAutomation(c echo.Context) error {
 	}
 
 	automation, err := s.repo.GetAutomation(ctx, id)
-	if err == pgx.ErrNoRows {
-		return c.JSON(http.StatusNotFound, nil)
-	}
-
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return c.JSON(http.StatusNotFound, nil)
+		}
+
 		log.Printf("getting automation failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
 	}
 
-	// TODO: check if containers exist in this box before enqueing
+	// ensure box exists
+	box, err := s.repo.GetBox(ctx, automation.BoxID)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return c.JSON(http.StatusNotFound, nil)
+		}
+
+		log.Printf("getting box failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, box)
+	}
+
+	if !inStringSlice(automation.SourceContainer, box.Containers) || !inStringSlice(automation.DestinationContainer, box.Containers) {
+		return c.JSON(http.StatusNotFound, nil)
+	}
 
 	go func(automation db.Automation, repo *db.Queries) {
 		if err := createAndEnqueue(context.Background(), automation, repo); err != nil {
@@ -300,27 +325,32 @@ func (s *Server) AddAutomation(c echo.Context) error {
 
 	box, err := s.repo.GetBox(ctx, id)
 
-	if err == pgx.ErrNoRows {
-		return c.JSON(http.StatusNotFound, nil)
-	}
-
 	if err != nil {
+		if err == pgx.ErrNoRows {
+			return c.JSON(http.StatusNotFound, nil)
+		}
+
 		return c.JSON(http.StatusInternalServerError, box)
 	}
 
-	automation := new(db.Automation)
+	automation := new(Automation)
 	if err = c.Bind(automation); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "invalid destination data",
 		})
 	}
 
-	// TODO: check if container exists
+	if err = c.Validate(automation); err != nil {
+		errors := err.(validator.ValidationErrors)
+		firstError := errors[0]
 
-	if len(automation.SourceTags) > TAGS_MAX || len(automation.DestinationTags) > TAGS_MAX {
 		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": fmt.Sprintf("too many tags. max_tags=%v", TAGS_MAX),
+			"error": fmt.Sprintf("%s: %s", firstError.Field(), validationErrorMsg(firstError)),
 		})
+	}
+
+	if !inStringSlice(automation.SourceContainer, box.Containers) || !inStringSlice(automation.DestinationContainer, box.Containers) {
+		return c.JSON(http.StatusNotFound, nil)
 	}
 
 	automationCreated, err := s.repo.CreateAutomation(ctx, db.CreateAutomationParams{
@@ -339,6 +369,52 @@ func (s *Server) AddAutomation(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, automationCreated)
+}
+
+func (s *Server) UpdateAutomation(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	automation := new(Automation)
+	if err = c.Bind(automation); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid destination data",
+		})
+	}
+
+	if err = c.Validate(automation); err != nil {
+		errors := err.(validator.ValidationErrors)
+		firstError := errors[0]
+
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": fmt.Sprintf("%s: %s", firstError.Field(), validationErrorMsg(firstError)),
+		})
+	}
+
+	// if !inStringSlice(automation.SourceContainer, box.Containers) || !inStringSlice(automation.DestinationContainer, box.Containers) {
+	// 	return c.JSON(http.StatusNotFound, nil)
+	// }
+
+	err = s.repo.UpdateAutomation(ctx, db.UpdateAutomationParams{
+		Name:                 automation.Name,
+		Description:          automation.Description,
+		Command:              automation.Command,
+		SourceContainer:      automation.SourceContainer,
+		SourceTags:           automation.SourceTags,
+		DestinationContainer: automation.DestinationContainer,
+		DestinationTags:      automation.DestinationTags,
+		ID:                   id,
+	})
+	if err != nil {
+		log.Printf("error updating automation: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusOK, nil)
 }
 
 func (s *Server) RemoveAutomation(c echo.Context) error {
@@ -365,4 +441,14 @@ func inStringSlice(s string, slice []string) bool {
 		}
 	}
 	return false
+}
+
+func deleteEmpty(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
 }

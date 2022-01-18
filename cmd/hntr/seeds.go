@@ -37,7 +37,7 @@ func seedDb(repo *db.Queries) error {
 			SourceContainer:      "hostnames",
 			SourceTags:           []string{"is_scope"},
 			DestinationContainer: "hostnames",
-			DestinationTags:      []string{"source:amass"},
+			DestinationTags:      []string{"source:subfinder"},
 			IsPublic:             true,
 		},
 		{

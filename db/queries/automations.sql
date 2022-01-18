@@ -10,6 +10,17 @@ WHERE is_public = true;
 -- name: GetAutomation :one
 SELECT * FROM automations WHERE id = $1 LIMIT 1;
 
+-- name: UpdateAutomation :exec
+UPDATE automations SET
+    name=$1,
+    description=$2,
+    source_container=$3,
+    source_tags=$4,
+    destination_container=$5,
+    destination_tags=$6,
+    command=$7
+WHERE id = $8;
+
 -- name: GetAutomationEvent :one
 SELECT * FROM automation_events WHERE id = $1 LIMIT 1;
 

@@ -263,8 +263,8 @@ function AutomationsAddModal({ showModal, setShowModal, box, automationsMutate }
 
 
   const submitHandler = data => {
-    data.source_tags = data.source_tags.split(',')
-    data.destination_tags = data.destination_tags.split(',')
+    data.source_tags = data.source_tags.split(',').filter(t => t)
+    data.destination_tags = data.destination_tags.split(',').filter(t => t)
 
     api.post(`/box/${box.id}/automations`, data)
       .then(() => {

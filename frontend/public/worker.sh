@@ -4,8 +4,6 @@
 # It is advised to run this script in an isolated context like a VM or a container
 # Usage: ./worker.sh <box_id>
 
-set -e
-
 if [ $# -eq 0 ]
   then
     echo "Please pass the box_id as an argument"
@@ -13,7 +11,7 @@ if [ $# -eq 0 ]
 fi
 
 # URL where new jobs are retrieve from and results are sent back to
-box_url="http://localhost:8080/api/box/$1"
+box_url="https://hntr.unlink.io/api/box/$1"
 sleep_timer=10
 stderr_log="hntr-worker.stderr.log"
 
@@ -26,8 +24,16 @@ while true
 do
     log "checking for new jobs"
 
-    # read jobs
-    jobs=`curl -s $box_url/_dequeue | awk 'NF'`
+    # read jobs from backend
+    jobs=`curl -s $box_url/_dequeue`
+    if [ $? -ne 0 ]
+    then
+        log "failed getting jobs from $box_url"
+        exit
+    fi
+
+    # remove newlines from result
+    jobs=$(echo "$jobs" | awk 'NF')
 
     # execute job and send back result
     while read -r line
@@ -44,10 +50,16 @@ do
         log "working on $id,cmd=$cmd"
         result=$(bash -c "$cmd" 2>> $stderr_log)
 
-        # send back result
-        answer=$(curl -s -H "Content-Type: text/plain" --data "$result" "$box_url/_results/$id")
+        retVal=$?
+        if [ $retVal -ne 0 ]
+        then
+            log "failed executing command, have a look at $stderr_log"
+        else
+            # send back result
+            answer=$(curl -s -H "Content-Type: text/plain" --data "$result" "$box_url/_results/$id")
+            log "finished working on $id,answer=$answer"
+        fi
 
-        log "finished working on $id,answer=$answer"
 
     done < <(echo "$jobs")
 

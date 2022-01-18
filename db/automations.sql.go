@@ -318,6 +318,43 @@ func (q *Queries) ListAutomations(ctx context.Context, boxID uuid.UUID) ([]Autom
 	return items, nil
 }
 
+const updateAutomation = `-- name: UpdateAutomation :exec
+UPDATE automations SET
+    name=$1,
+    description=$2,
+    source_container=$3,
+    source_tags=$4,
+    destination_container=$5,
+    destination_tags=$6,
+    command=$7
+WHERE id = $8
+`
+
+type UpdateAutomationParams struct {
+	Name                 string    `json:"name"`
+	Description          string    `json:"description"`
+	SourceContainer      string    `json:"source_container"`
+	SourceTags           []string  `json:"source_tags"`
+	DestinationContainer string    `json:"destination_container"`
+	DestinationTags      []string  `json:"destination_tags"`
+	Command              string    `json:"command"`
+	ID                   uuid.UUID `json:"id"`
+}
+
+func (q *Queries) UpdateAutomation(ctx context.Context, arg UpdateAutomationParams) error {
+	_, err := q.db.Exec(ctx, updateAutomation,
+		arg.Name,
+		arg.Description,
+		arg.SourceContainer,
+		arg.SourceTags,
+		arg.DestinationContainer,
+		arg.DestinationTags,
+		arg.Command,
+		arg.ID,
+	)
+	return err
+}
+
 const updateAutomationEventStatus = `-- name: UpdateAutomationEventStatus :exec
 UPDATE automation_events SET status = $1 where id = $2
 `
