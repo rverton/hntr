@@ -56,7 +56,7 @@ export default function MarketingLayout({ children }) {
             ))}
           </div>
           <div className="mt-8 md:mt-0 md:order-1">
-            <p className="text-center text-base text-gray-400">&copy; {new Date().getFullYear()} hntr.unlink.io, All rights reserved.</p>
+            <p className="text-center text-base text-gray-400">&copy; {new Date().getFullYear()} hntr.unlink.io, hello@robinverton.de</p>
           </div>
         </div>
       </footer>
