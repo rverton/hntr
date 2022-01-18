@@ -525,12 +525,10 @@ function InstallWorkerModal({ showModal, setShowModal, box }) {
                       Be aware that this will <span className="font-medium">execute commands from your box</span>. It is advised to run this script in an isolated context like a VM or a container
                     </p>
 
-                    <p className="text-base text-gray-500 py-3">
-                      The worker script can be <a href="/worker.sh" className="underline">downloaded here</a>.
-                    </p>
-
                     <div className="font-mono border p-5 text-sm my-3">
-                      <span id="curl">./worker.sh {box?.id}</span>
+                      <div>wget https://{window.location.host}/worker.sh</div>
+                      <div>chmod +x worker.sh</div>
+                      <div>./worker.sh {box?.id}</div>
                     </div>
 
                   </div>
