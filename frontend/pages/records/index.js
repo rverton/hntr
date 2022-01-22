@@ -68,7 +68,7 @@ export default function Home() {
     let tags = prompt(`Choose new tags for ${Object.keys(selected).length} selected entries, separated by ',': `)
     if (tags === null) return;
 
-    api.put(`/box/${id}/${container}/`, {
+    api.put(`/box/${id}/${container}`, {
       records: Object.keys(selected),
       tags: tags.split(',')
     })
