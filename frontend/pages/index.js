@@ -45,7 +45,7 @@ export default function Index() {
         </div>
       </div>
 
-      <img src="/screenshot.png" className="hidden md:block md:w-8/12 border shadow mt-8 mx-auto" />
+      <img alt="hntr screenshot" src="/screenshot.png" className="hidden md:block md:w-8/12 border shadow mt-8 mx-auto" />
 
       <div id="howitworks" className="max-w-6xl mx-auto my-20 sm:px-6 lg:px-8 p-3">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
