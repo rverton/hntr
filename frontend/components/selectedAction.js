@@ -68,7 +68,7 @@ export default function SelectedActionDropdown({ records, selected, setSelected,
                     'block px-4 py-2 text-sm'
                   )}
                 >
-                  Select all
+                  Select all visible
                 </a>
               )}
             </Menu.Item>

@@ -519,16 +519,31 @@ function InstallWorkerModal({ showModal, setShowModal, box }) {
                   <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
                     Install Worker
                   </Dialog.Title>
-                  <div className="mt-2">
+                  <div className="mt-2 space-y-8">
                     <p className="text-base text-gray-500">
                       To run automations you need to run a worker, which will fetch jobs from your box and submits results.
-                      Be aware that this will <span className="font-medium">execute commands from your box</span>. It is advised to run this script in an isolated context like a VM or a container
+                      Be aware that this will <span className="font-medium">execute commands from your box</span>. It is advised to run this script in an isolated context like a VM or a container.
                     </p>
 
-                    <div className="font-mono border p-5 text-sm my-3">
-                      <div>wget https://hntr.unlink.io/worker.sh</div>
-                      <div>chmod +x worker.sh</div>
-                      <div>./worker.sh {box?.id}</div>
+                    <div>
+                      <h3 className="font-semibold">Run without isolation:</h3>
+                      <div className="font-mono border p-5 text-sm my-3">
+                        <div>wget https://hntr.unlink.io/worker.sh</div>
+                        <div>chmod +x worker.sh</div>
+                        <div>./worker.sh {box?.id}</div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <h3 className="font-semibold">Run in Docker container:</h3>
+                      <div className="font-mono border p-5 text-sm my-3">
+                        <div>wget https://hntr.unlink.io/Dockerfile</div>
+                        <div>docker build -t hntr-runner .</div>
+                        <div>docker run --rm -it hntr-runner {box?.id}</div>
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        Modify the Dockerfile and add all tools you need in your automations.
+                      </p>
                     </div>
 
                   </div>

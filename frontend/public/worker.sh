@@ -20,6 +20,8 @@ log() {
     echo "[$now] $1"
 }
 
+log "Using box $1"
+
 while true
 do
     log "checking for new jobs"
