@@ -22,7 +22,7 @@ export default function MarketingLayout({ children }) {
       <div className="absolute top-0 left-0 w-full h-[36rem] bg-gradient-to-b from-orange-100 -z-10"></div>
       <header className="z-10">
         <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8" aria-label="Top">
-          <div className="w-full py-6 flex items-center justify-between border-b border-indigo-500 lg:border-none">
+          <div className="w-full py-6 flex items-center justify-between lg:border-none">
             <div className="flex w-full justify-between">
               <div className="hidden space-x-8 lg:block">
                 <Link href="/" >
