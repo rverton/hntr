@@ -109,6 +109,15 @@ export default function Layout({ children }) {
           >
             {numberFormat(count)} / {numberFormat(limit)} Quota
           </a>
+          <Link href="/docs/changelog/">
+            <a
+              className={classNames(
+                "font-medium text-gray-600 w-full px-2 py-1 text-sm hover:bg-gray-100 rounded-sm",
+              )}
+            >
+              Changelog
+            </a>
+          </Link>
           <Link href="/docs/">
             <a
               className={classNames(

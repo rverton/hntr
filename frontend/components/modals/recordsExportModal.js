@@ -47,7 +47,7 @@ export default function RecordsExportModal({ showModal, setShowModal, id, contai
 
                     <div className="font-mono border p-5 text-sm my-3">
                       <span id="curl">curl -s &quot;{apiUrl}/box/{id}/{container}&quot;</span>
-                      <span className="text-gray-400"> | jq -r &apos;`.records[].data&apos;`</span>
+                      <span className="text-gray-400"> | jq -r &apos;.records[].data&apos;</span>
                     </div>
 
                   </div>
