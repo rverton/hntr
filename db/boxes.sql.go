@@ -10,7 +10,7 @@ import (
 )
 
 const createBox = `-- name: CreateBox :one
-INSERT INTO boxes (name, containers) VALUES ($1, $2) RETURNING id, name, containers, created_at
+INSERT INTO boxes (name, containers) VALUES ($1, $2) RETURNING id, name, containers, created_at, last_accessed_at
 `
 
 type CreateBoxParams struct {
@@ -26,12 +26,13 @@ func (q *Queries) CreateBox(ctx context.Context, arg CreateBoxParams) (Box, erro
 		&i.Name,
 		&i.Containers,
 		&i.CreatedAt,
+		&i.LastAccessedAt,
 	)
 	return i, err
 }
 
 const getBox = `-- name: GetBox :one
-SELECT id, name, containers, created_at FROM boxes WHERE id = $1 LIMIT 1
+SELECT id, name, containers, created_at, last_accessed_at FROM boxes WHERE id = $1 LIMIT 1
 `
 
 func (q *Queries) GetBox(ctx context.Context, id uuid.UUID) (Box, error) {
@@ -42,12 +43,13 @@ func (q *Queries) GetBox(ctx context.Context, id uuid.UUID) (Box, error) {
 		&i.Name,
 		&i.Containers,
 		&i.CreatedAt,
+		&i.LastAccessedAt,
 	)
 	return i, err
 }
 
 const listBoxes = `-- name: ListBoxes :many
-SELECT id, name, containers, created_at FROM boxes
+SELECT id, name, containers, created_at, last_accessed_at FROM boxes
 `
 
 func (q *Queries) ListBoxes(ctx context.Context) ([]Box, error) {
@@ -64,6 +66,7 @@ func (q *Queries) ListBoxes(ctx context.Context) ([]Box, error) {
 			&i.Name,
 			&i.Containers,
 			&i.CreatedAt,
+			&i.LastAccessedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -80,7 +83,7 @@ UPDATE boxes SET
     name=$1, containers=$2
 WHERE
     id=$3
-RETURNING id, name, containers, created_at
+RETURNING id, name, containers, created_at, last_accessed_at
 `
 
 type UpdateBoxParams struct {
@@ -91,5 +94,14 @@ type UpdateBoxParams struct {
 
 func (q *Queries) UpdateBox(ctx context.Context, arg UpdateBoxParams) error {
 	_, err := q.db.Exec(ctx, updateBox, arg.Name, arg.Containers, arg.ID)
+	return err
+}
+
+const updateLastAccessed = `-- name: UpdateLastAccessed :exec
+UPDATE boxes SET last_accessed_at = NOW() WHERE id = $1
+`
+
+func (q *Queries) UpdateLastAccessed(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, updateLastAccessed, id)
 	return err
 }

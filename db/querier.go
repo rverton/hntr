@@ -31,6 +31,7 @@ type Querier interface {
 	UpdateAutomationEventStatus(ctx context.Context, arg UpdateAutomationEventStatusParams) error
 	UpdateAutomationEventStatusFinished(ctx context.Context, arg UpdateAutomationEventStatusFinishedParams) error
 	UpdateBox(ctx context.Context, arg UpdateBoxParams) error
+	UpdateLastAccessed(ctx context.Context, id uuid.UUID) error
 	UpdateRecordTags(ctx context.Context, arg UpdateRecordTagsParams) error
 }
 

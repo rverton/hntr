@@ -37,10 +37,11 @@ type AutomationEvent struct {
 }
 
 type Box struct {
-	ID         uuid.UUID `json:"id"`
-	Name       string    `json:"name"`
-	Containers []string  `json:"containers"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID             uuid.UUID `json:"id"`
+	Name           string    `json:"name"`
+	Containers     []string  `json:"containers"`
+	CreatedAt      time.Time `json:"created_at"`
+	LastAccessedAt time.Time `json:"last_accessed_at"`
 }
 
 type GueFinishedJob struct {

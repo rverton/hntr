@@ -39,6 +39,13 @@ func (s *Server) GetBox(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, box)
 	}
 
+	// update last accessed at date async
+	go func(id uuid.UUID) {
+		if err := s.repo.UpdateLastAccessed(ctx, id); err != nil {
+			log.Printf("updating last access box date failed: %v", err)
+		}
+	}(id)
+
 	return c.JSON(http.StatusOK, box)
 }
 
