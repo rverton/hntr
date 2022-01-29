@@ -57,6 +57,7 @@ func executeCommand(ctx context.Context, jobArgs RunAutomationArgs, deadline tim
 			jobArgs.Automation.DestinationContainer,
 			jobArgs.Automation.DestinationTags,
 			quotaLimit,
+			false,
 		)
 
 		results <- affected

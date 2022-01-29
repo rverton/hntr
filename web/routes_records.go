@@ -126,6 +126,11 @@ func (s *Server) AddRecords(c echo.Context) error {
 		})
 	}
 
+	updateDuplicate := false
+	if c.QueryParam("update") != "" {
+		updateDuplicate = true
+	}
+
 	affected := db.RecordsBatchInsert(
 		ctx,
 		s.dbPool,
@@ -134,6 +139,7 @@ func (s *Server) AddRecords(c echo.Context) error {
 		container,
 		tags,
 		int64(s.recordsLimit)-count-1,
+		updateDuplicate,
 	)
 
 	return c.JSON(http.StatusOK, map[string]interface{}{

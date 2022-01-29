@@ -183,6 +183,11 @@ func (s *Server) UpdateAutomationEvent(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
+	updateDuplicate := false
+	if c.QueryParam("update") != "" {
+		updateDuplicate = true
+	}
+
 	// retrieve automtion data
 	affected := db.RecordsBatchInsert(
 		ctx,
@@ -192,6 +197,7 @@ func (s *Server) UpdateAutomationEvent(c echo.Context) error {
 		automation.DestinationContainer,
 		automation.DestinationTags,
 		int64(s.recordsLimit)-count-1,
+		updateDuplicate,
 	)
 
 	err = s.repo.UpdateAutomationEventStatusFinished(ctx, db.UpdateAutomationEventStatusFinishedParams{

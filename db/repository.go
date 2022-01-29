@@ -55,7 +55,7 @@ func SetupRepository(dbUrl string, logQueries bool) (*Queries, *pgxpool.Pool, er
 	return New(pgxPool), pgxPool, nil
 }
 
-func RecordsBatchInsert(ctx context.Context, dbPool *pgxpool.Pool, reader io.Reader, boxId uuid.UUID, container string, tags []string, quotaRemaining int64) int64 {
+func RecordsBatchInsert(ctx context.Context, dbPool *pgxpool.Pool, reader io.Reader, boxId uuid.UUID, container string, tags []string, quotaRemaining int64, updateDuplicate bool) int64 {
 	var added int64
 	batch := &pgx.Batch{}
 
@@ -69,19 +69,33 @@ func RecordsBatchInsert(ctx context.Context, dbPool *pgxpool.Pool, reader io.Rea
 			break
 		}
 
-		batch.Queue(
-			`INSERT INTO 
+		if updateDuplicate {
+			batch.Queue(
+				`INSERT INTO 
                 records (box_id, container, data, tags)
             VALUES 
                 ($1, $2, $3, $4)
 			ON CONFLICT (box_id, container, data) DO UPDATE
 			SET tags = excluded.tags
             WHERE records.tags != excluded.tags`,
-			boxId,
-			container,
-			line,
-			tags,
-		)
+				boxId,
+				container,
+				line,
+				tags,
+			)
+		} else {
+			batch.Queue(
+				`INSERT INTO 
+                records (box_id, container, data, tags)
+            VALUES 
+                ($1, $2, $3, $4)
+			ON CONFLICT (box_id, container, data) DO NOTHING`,
+				boxId,
+				container,
+				line,
+				tags,
+			)
+		}
 		added++
 	}
 
