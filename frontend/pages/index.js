@@ -24,11 +24,11 @@ export default function Index() {
       <div className="max-w-6xl mx-auto sm:px-6 lg:px-8 p-3">
         <div className="mt-6 space-y-7 w-2/3 mx-auto">
           <h1 className="text-gray-700 text-5xl font-bold text-center">
-            Collaborative workspaces for security tester.
+            Collaborative workspaces for target data.
           </h1>
           <h2 className="text-gray-600 text-xl text-center">
-            Create a box and start importing target data via your favourite tools over curl. Add tags and run
-            automations on lists of tagged entries.
+            Create a box and start piping target data from your favourite tools with curl. Add tags, run
+            automations on them and filter your results.
           </h2>
           <div className="grid gap-8 items-start justify-center">
             <div className="relative group">
@@ -59,7 +59,7 @@ export default function Index() {
           </div>
           <div className="">
             <h2 className=" text-xl">Collaboration</h2>
-            <p className="pt-2">Share your box and work together on targets.</p>
+            <p className="pt-2">Share your box to work together on the same data.</p>
           </div>
           <div className="">
             <h2 className=" text-xl">Automations</h2>
