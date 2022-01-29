@@ -4,6 +4,8 @@ import { Dialog, Transition } from '@headlessui/react'
 
 import api from '../../lib/api'
 
+import FileUploader from '../fileUploader'
+
 export default function AutomationsAddModal({ showModal, setShowModal, box, automationsMutate }) {
   const cancelButtonRef = useRef(null)
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -13,7 +15,7 @@ export default function AutomationsAddModal({ showModal, setShowModal, box, auto
     data.source_tags = data.source_tags.split(',').filter(t => t)
     data.destination_tags = data.destination_tags.split(',').filter(t => t)
 
-    api.post(`/box/${box.id}/automations`, data)
+    api.post(`/box/${box.id}/automations`, [data])
       .then(() => {
         automationsMutate()
         setShowModal(false)
@@ -22,6 +24,26 @@ export default function AutomationsAddModal({ showModal, setShowModal, box, auto
         console.error(err);
         alert('Error. Please try again later')
       })
+  }
+
+  const importMultiple = (file) => {
+    var reader = new FileReader();
+
+    reader.onload = function(event) {
+      const automations = JSON.parse(event.target.result)
+
+      api.post(`/box/${box.id}/automations`, automations)
+        .then(() => {
+          automationsMutate()
+          setShowModal(false)
+        })
+        .catch(err => {
+          console.error(err);
+          alert('Unable to import data: ' + err)
+        })
+    };
+
+    reader.readAsText(file);
   }
 
   return (
@@ -58,6 +80,13 @@ export default function AutomationsAddModal({ showModal, setShowModal, box, auto
                 <div className="w-full mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                   <Dialog.Title as="h3" className="text-lg leading-6 font-medium text-gray-900">
                     Add automation to your box
+
+                    <div className="float-right">
+                      <FileUploader accept=".json" handleFile={importMultiple}>
+                        <a className="text-sm border-b cursor-pointer">Import multiple?</a>
+                      </FileUploader>
+                    </div>
+
                   </Dialog.Title>
                   <div className="">
 

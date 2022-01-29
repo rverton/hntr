@@ -23,6 +23,18 @@ export default function AutomationsIndex() {
   const { automations, mutate, isLoading, isError } = useAutomations(id)
   const { box } = useBox(id)
 
+  const exportAutomations = () => {
+    const element = document.createElement("a")
+    const data = new Blob([JSON.stringify(automations)], { type: 'application/json' })
+
+    element.href = URL.createObjectURL(data);
+    element.download = "hntr-automations.json";
+
+    document.body.appendChild(element);
+
+    element.click();
+  }
+
   return (
     <>
       <Head>
@@ -36,14 +48,19 @@ export default function AutomationsIndex() {
 
 
           <div className="flex space-x-2">
-            <button onClick={() => setShowLibrary(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm border border-gray-300 font-medium rounded-md hover:bg-gray-100 sm:mt-0 sm:ml-3 sm:w-auto">
+            <button onClick={() => setShowLibrary(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border-transparent shadow-sm border border-gray-300 font-medium rounded-md hover:bg-gray-100 sm:mt-0 sm:ml-3 sm:w-auto">
               Library
             </button>
 
-            <button onClick={() => setShowWorkerModal(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm border border-gray-300 font-medium rounded-md hover:bg-gray-100 sm:mt-0 sm:ml-3 sm:w-auto">
+            <button onClick={exportAutomations} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border-transparent shadow-sm border border-gray-300 font-medium rounded-md hover:bg-gray-100 sm:mt-0 sm:ml-3 sm:w-auto">
+              Export
+            </button>
+
+            <button onClick={() => setShowWorkerModal(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm border-gray-300 font-medium rounded-md hover:bg-gray-100 sm:mt-0 sm:ml-3 sm:w-auto">
               Install Worker
             </button>
-            <button onClick={() => setShowAdd(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border border-transparent shadow-sm rounded-md text-white bg-orange-800 hover:bg-orange-900 sm:mt-0 sm:ml-3 sm:w-auto">
+
+            <button onClick={() => setShowAdd(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border-transparent shadow-sm rounded-md text-white bg-orange-800 hover:bg-orange-900 sm:mt-0 sm:ml-3 sm:w-auto">
               Add
             </button>
           </div>
@@ -70,7 +87,10 @@ export default function AutomationsIndex() {
           </div>
         </div>
 
-        <div className="text-center text-gray-500 pt-5">Note: You need to execute the automation worker to process tasks.</div>
+        <div className="text-center text-gray-500 pt-5">
+          Note: You need to execute an automation worker to process tasks.<br />
+          The log may be cleared after a few weeks.
+        </div>
 
       </Layout>
 

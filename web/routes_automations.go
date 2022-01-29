@@ -333,42 +333,49 @@ func (s *Server) AddAutomation(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, box)
 	}
 
-	automation := new(Automation)
-	if err = c.Bind(automation); err != nil {
+	automations := make([]Automation, 0)
+
+	if err = c.Bind(&automations); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "invalid destination data",
+			"error": "invalid automation data",
 		})
 	}
+	var created []db.Automation
 
-	if err = c.Validate(automation); err != nil {
-		errors := err.(validator.ValidationErrors)
-		firstError := errors[0]
+	for _, automation := range automations {
 
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": fmt.Sprintf("%s: %s", firstError.Field(), validationErrorMsg(firstError)),
+		if err = c.Validate(automation); err != nil {
+			errors := err.(validator.ValidationErrors)
+			firstError := errors[0]
+
+			return c.JSON(http.StatusBadRequest, map[string]string{
+				"error": fmt.Sprintf("%s: %s", firstError.Field(), validationErrorMsg(firstError)),
+			})
+		}
+
+		if !inStringSlice(automation.SourceContainer, box.Containers) || !inStringSlice(automation.DestinationContainer, box.Containers) {
+			return c.JSON(http.StatusNotFound, nil)
+		}
+
+		automationCreated, err := s.repo.CreateAutomation(ctx, db.CreateAutomationParams{
+			BoxID:                box.ID,
+			Name:                 automation.Name,
+			Description:          automation.Description,
+			Command:              automation.Command,
+			SourceContainer:      automation.SourceContainer,
+			SourceTags:           automation.SourceTags,
+			DestinationContainer: automation.DestinationContainer,
+			DestinationTags:      automation.DestinationTags,
 		})
+		if err != nil {
+			log.Printf("error creating automation: %v", err)
+			return c.JSON(http.StatusInternalServerError, nil)
+		}
+
+		created = append(created, automationCreated)
 	}
 
-	if !inStringSlice(automation.SourceContainer, box.Containers) || !inStringSlice(automation.DestinationContainer, box.Containers) {
-		return c.JSON(http.StatusNotFound, nil)
-	}
-
-	automationCreated, err := s.repo.CreateAutomation(ctx, db.CreateAutomationParams{
-		BoxID:                box.ID,
-		Name:                 automation.Name,
-		Description:          automation.Description,
-		Command:              automation.Command,
-		SourceContainer:      automation.SourceContainer,
-		SourceTags:           automation.SourceTags,
-		DestinationContainer: automation.DestinationContainer,
-		DestinationTags:      automation.DestinationTags,
-	})
-	if err != nil {
-		log.Printf("error creating automation: %v", err)
-		return c.JSON(http.StatusInternalServerError, nil)
-	}
-
-	return c.JSON(http.StatusOK, automationCreated)
+	return c.JSON(http.StatusOK, created)
 }
 
 func (s *Server) UpdateAutomation(c echo.Context) error {

@@ -37,7 +37,7 @@ func TestGetRecords(t *testing.T) {
 
 	err = repo.CreateRecord(context.Background(), db.CreateRecordParams{
 		BoxID:     box.ID,
-		Data:      "foo_tag",
+		Data:      "foo_last_added",
 		Container: "hostnames",
 		Tags:      []string{"single_tag"},
 	})
@@ -60,8 +60,9 @@ func TestGetRecords(t *testing.T) {
 
 		assert.Len(d.Records, 11)
 		assert.Equal(11, d.Count)
-		assert.Equal("foo_0", d.Records[0].Data)
-		assert.Equal([]string{"a", "b"}, d.Records[0].Tags)
+		assert.Equal("foo_last_added", d.Records[0].Data)
+		assert.Equal([]string{"single_tag"}, d.Records[0].Tags)
+		assert.Equal([]string{"a", "b"}, d.Records[10].Tags)
 	})
 
 	t.Run("list by tag", func(t *testing.T) {

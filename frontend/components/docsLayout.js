@@ -16,7 +16,9 @@ export default function Docs({ children }) {
             </li>
 
             <li className="pb-3 flex flex-col space-y-2">
-              <h3 className="font-medium">User Interface</h3>
+              <Link href="/docs/user-interface">
+                <a className="font-medium">User Interface</a>
+              </Link>
               <a href="#" className="ml-4">Importing data</a>
               <a href="#" className="ml-4">Managing records</a>
               <a href="#" className="ml-4">Automations</a>
@@ -24,7 +26,21 @@ export default function Docs({ children }) {
             </li>
 
             <li className="pb-3 flex flex-col space-y-2">
-              <a href="#" className="font-medium">Fair Use Quota</a>
+              <Link href="/docs/quota">
+                <a href="#" className="font-medium">Fair Use Quota</a>
+              </Link>
+            </li>
+
+            <li className="pb-3 flex flex-col space-y-2">
+              <Link href="/docs/opensource">
+                <a href="#" className="font-medium">Open Source</a>
+              </Link>
+            </li>
+
+            <li className="pb-3 flex flex-col space-y-2">
+              <Link href="/docs/security-and-privacy">
+                <a href="#" className="font-medium">Security &amp; Privacy</a>
+              </Link>
             </li>
           </ul>
         </div>

@@ -45,7 +45,7 @@ export default function MarketingLayout({ children }) {
 
       {children}
 
-      <footer className="bg-white">
+      <footer className="">
         <div className="max-w-6xl mx-auto py-12 px-4 sm:px-6 md:flex md:items-center md:justify-between lg:px-8">
           <div className="flex justify-center space-x-6 md:order-2">
             {[].map((item) => (
