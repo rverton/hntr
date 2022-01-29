@@ -194,6 +194,35 @@ func (q *Queries) GetAutomationEvent(ctx context.Context, id uuid.UUID) (Automat
 	return i, err
 }
 
+const getAutomationEventCounts = `-- name: GetAutomationEventCounts :many
+SELECT status, count(*) FROM automation_events WHERE box_id = $1 group by status
+`
+
+type GetAutomationEventCountsRow struct {
+	Status string `json:"status"`
+	Count  int64  `json:"count"`
+}
+
+func (q *Queries) GetAutomationEventCounts(ctx context.Context, boxID uuid.UUID) ([]GetAutomationEventCountsRow, error) {
+	rows, err := q.db.Query(ctx, getAutomationEventCounts, boxID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []GetAutomationEventCountsRow{}
+	for rows.Next() {
+		var i GetAutomationEventCountsRow
+		if err := rows.Scan(&i.Status, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listAutomationEvents = `-- name: ListAutomationEvents :many
 SELECT id, box_id, automation_id, status, data, affected_rows, created_at, started_at, finished_at FROM automation_events WHERE automation_id = $1 ORDER BY created_at DESC LIMIT $2
 `

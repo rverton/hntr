@@ -24,7 +24,7 @@ export default function AutomationRow({ automation, linkTo, handler }) {
                     <span className="truncate">{automation.command}</span>
                   </p>
                 </div>
-                <div className="hidden md:block">
+                <div className="hidden md:block border-r border-l pl-2">
                   <div>
                     <p className="text-sm text-gray-900">
                       From <span className="font-bold">{automation.source_container}</span>

@@ -20,6 +20,7 @@ type Querier interface {
 	DequeueAutomationEvents(ctx context.Context, arg DequeueAutomationEventsParams) ([]AutomationEvent, error)
 	GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error)
 	GetAutomationEvent(ctx context.Context, id uuid.UUID) (AutomationEvent, error)
+	GetAutomationEventCounts(ctx context.Context, boxID uuid.UUID) ([]GetAutomationEventCountsRow, error)
 	GetBox(ctx context.Context, id uuid.UUID) (Box, error)
 	ListAutomationEvents(ctx context.Context, arg ListAutomationEventsParams) ([]AutomationEvent, error)
 	ListAutomationLibrary(ctx context.Context) ([]ListAutomationLibraryRow, error)

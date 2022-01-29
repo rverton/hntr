@@ -97,6 +97,35 @@ func (s *Server) ListAutomationEvents(c echo.Context) error {
 	return c.JSON(http.StatusOK, automationEvents)
 }
 
+func (s *Server) GetAutomationEventCounts(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		log.Printf("unable to parse id: %v", err)
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	counts := map[string]int64{
+		"scheduled":  0,
+		"processing": 0,
+		"finished":   0,
+	}
+
+	stats, err := s.repo.GetAutomationEventCounts(ctx, id)
+
+	if err != nil {
+		log.Printf("listing automations failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, counts)
+	}
+
+	for _, stat := range stats {
+		counts[stat.Status] = stat.Count
+	}
+
+	return c.JSON(http.StatusOK, counts)
+}
+
 func (s *Server) DequeueJobs(c echo.Context) error {
 	ctx := context.Background()
 

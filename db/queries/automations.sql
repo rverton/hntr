@@ -1,6 +1,9 @@
 -- name: ListAutomations :many
 SELECT * FROM automations WHERE box_id = $1;
 
+-- name: GetAutomationEventCounts :many
+SELECT status, count(*) FROM automation_events WHERE box_id = $1 group by status;
+
 -- name: ListAutomationLibrary :many
 SELECT 
     id, name, description, command, source_container, source_tags, destination_container, destination_tags, is_public
