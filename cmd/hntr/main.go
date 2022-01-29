@@ -35,7 +35,7 @@ func main() {
 	var (
 		dbUrl        = fs.String("postgres-url", "", "postgres db url, e.g. postgres://user:pass@localhost:5432/dbname")
 		bind         = fs.String("bind", ":8080", "bind to [ip]:port")
-		recordsLimit = fs.Int("insert-limit", 50000, "max. number of records")
+		recordsLimit = fs.Int("insert-limit", 25000, "max. number of records")
 		seed         = fs.Bool("seed", false, "load seed data")
 	)
 

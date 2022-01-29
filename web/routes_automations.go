@@ -24,7 +24,7 @@ type AutomationHostnameCount struct {
 }
 
 type Automation struct {
-	Name                 string   `json:"name" validate:"required,min=1,max=20"`
+	Name                 string   `json:"name" validate:"required,min=1,max=50"`
 	Description          string   `json:"description" validate:"required,min=0,max=200"`
 	Command              string   `json:"command" validate:"required,min=0,max=500"`
 	SourceContainer      string   `json:"source_container" validate:"required,min=0,max=500"`

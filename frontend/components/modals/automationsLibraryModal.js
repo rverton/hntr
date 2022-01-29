@@ -11,7 +11,7 @@ export default function AutomationsLibraryModal({ showModal, setShowModal, boxId
   const { automationsLibrary } = useAutomationsLibrary()
 
   const handleImport = (data) => {
-    api.post(`/box/${boxId}/automations`, data)
+    api.post(`/box/${boxId}/automations`, [data])
       .then(() => {
         automationsMutate()
         setShowModal(false)
