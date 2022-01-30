@@ -42,6 +42,12 @@ export default function Docs({ children }) {
                 <a href="#" className="font-medium">Security &amp; Privacy</a>
               </Link>
             </li>
+
+            <li className="pb-3 flex flex-col space-y-2">
+              <Link href="/docs/changelog">
+                <a href="#" className="font-medium">Changelog</a>
+              </Link>
+            </li>
           </ul>
         </div>
         <div className="w-full px-6 text-base prose">
