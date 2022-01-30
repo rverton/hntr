@@ -23,6 +23,19 @@ export default function Layout({ children }) {
   const { box, isLoading, isError, mutate } = useBox(id)
   const { count, limit } = useRecordsCount(id)
 
+  const deleteBox = () => {
+    if (!confirm('Are you sure you want to delete this box and all related data?')) return;
+
+    api.delete(`/box/${id}`)
+      .then(() => {
+        router.push(`/`)
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Error. Please try again later')
+      })
+  }
+
   const handleUpdateBox = (shouldChangeName) => {
     let updateValues = { name: box.name, containers: box.containers }
     if (shouldChangeName) {
@@ -108,6 +121,15 @@ export default function Layout({ children }) {
             )}
           >
             {numberFormat(count)} / {numberFormat(limit)} Quota
+          </a>
+          <a
+            href="#"
+            onClick={deleteBox}
+            className={classNames(
+              "font-medium text-gray-600 w-full px-2 py-1 text-sm hover:bg-gray-100 rounded-sm",
+            )}
+          >
+            Delete Box
           </a>
           <Link href="/docs/changelog/">
             <a

@@ -19,6 +19,7 @@ type Querier interface {
 	DeleteAutomation(ctx context.Context, id uuid.UUID) error
 	DeleteAutomationEvents(ctx context.Context, arg DeleteAutomationEventsParams) error
 	DeleteAutomationEventsOld(ctx context.Context) error
+	DeleteBox(ctx context.Context, id uuid.UUID) error
 	DeleteRecords(ctx context.Context, arg DeleteRecordsParams) error
 	DequeueAutomationEvents(ctx context.Context, arg DequeueAutomationEventsParams) ([]AutomationEvent, error)
 	GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error)

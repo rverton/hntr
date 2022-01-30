@@ -114,3 +114,31 @@ func (s *Server) UpdateBox(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, boxNew)
 }
+
+func (s *Server) DeleteBox(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		log.Printf("unable to parse id: %v", err)
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	box, err := s.repo.GetBox(ctx, id)
+
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return c.JSON(http.StatusNotFound, nil)
+		}
+
+		log.Printf("getting box failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, box)
+	}
+
+	if err := s.repo.DeleteBox(ctx, box.ID); err != nil {
+		log.Printf("deleting box failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusOK, nil)
+}

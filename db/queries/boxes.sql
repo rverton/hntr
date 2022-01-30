@@ -16,3 +16,6 @@ RETURNING *;
 
 -- name: UpdateLastAccessed :exec
 UPDATE boxes SET last_accessed_at = NOW() WHERE id = $1;
+
+-- name: DeleteBox :exec
+DELETE FROM boxes WHERE id = $1;

@@ -31,6 +31,15 @@ func (q *Queries) CreateBox(ctx context.Context, arg CreateBoxParams) (Box, erro
 	return i, err
 }
 
+const deleteBox = `-- name: DeleteBox :exec
+DELETE FROM boxes WHERE id = $1
+`
+
+func (q *Queries) DeleteBox(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, deleteBox, id)
+	return err
+}
+
 const getBox = `-- name: GetBox :one
 SELECT id, name, containers, created_at, last_accessed_at FROM boxes WHERE id = $1 LIMIT 1
 `
