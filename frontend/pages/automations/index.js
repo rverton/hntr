@@ -7,6 +7,7 @@ import useAutomations from '../../hooks/useAutomations'
 import useAutomationEventCounts from '../../hooks/useAutomationEventCounts'
 import useBox from '../../hooks/useBox'
 
+import ClearAutomationEventsAction from '../../components/clearAutomationEventsAction'
 import AutomationsRow from '../../components/automationsRow'
 import InstallWorkerModal from '../../components/modals/automationsInstallWorkerModal'
 import LibraryModal from '../../components/modals/automationsLibraryModal'
@@ -21,7 +22,7 @@ export default function AutomationsIndex() {
   const [showAdd, setShowAdd] = useState(false)
 
   const { automations, mutate, isLoading, isError } = useAutomations(id)
-  const { counts } = useAutomationEventCounts(id)
+  const { counts, mutate: mutateCounts } = useAutomationEventCounts(id)
   const { box } = useBox(id)
 
   const exportAutomations = () => {
@@ -45,14 +46,15 @@ export default function AutomationsIndex() {
       <Layout>
 
         <div className="h-16 flex items-center border-b px-4 bg-white text-xl justify-between">
-          <div className="text-xl">Automations</div>
-
-
-          <div className="text-center">
-            <div className="text-base">{counts?.scheduled} / {counts?.processing} / {counts?.finished}</div>
-            <div className="text-xs">scheduled / processing / finished</div>
+          <div>
+            <div className="text-xl">Automations</div>
+            <div className="text-xs">{counts?.scheduled} scheduled / {counts?.processing} processing / {counts?.finished} finished</div>
           </div>
+
           <div className="flex space-x-2">
+
+            <ClearAutomationEventsAction boxid={id} mutate={mutateCounts} />
+
             <button onClick={() => setShowLibrary(true)} type="submit" className="mt-3 w-full inline-flex items-center justify-center px-4 py-2 tracking-widest text-xs border-transparent shadow-sm border border-gray-300 font-medium rounded-md hover:bg-gray-100 sm:mt-0 sm:ml-3 sm:w-auto">
               Library
             </button>

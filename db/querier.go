@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	CountAutomationEvents(ctx context.Context, boxID uuid.UUID) (int64, error)
 	CountRecordsByBox(ctx context.Context, boxID uuid.UUID) (int64, error)
 	CountRecordsByBoxFilter(ctx context.Context, arg CountRecordsByBoxFilterParams) (int64, error)
 	CreateAutomation(ctx context.Context, arg CreateAutomationParams) (Automation, error)
@@ -16,6 +17,8 @@ type Querier interface {
 	CreateBox(ctx context.Context, arg CreateBoxParams) (Box, error)
 	CreateRecord(ctx context.Context, arg CreateRecordParams) error
 	DeleteAutomation(ctx context.Context, id uuid.UUID) error
+	DeleteAutomationEvents(ctx context.Context, arg DeleteAutomationEventsParams) error
+	DeleteAutomationEventsOld(ctx context.Context) error
 	DeleteRecords(ctx context.Context, arg DeleteRecordsParams) error
 	DequeueAutomationEvents(ctx context.Context, arg DequeueAutomationEventsParams) ([]AutomationEvent, error)
 	GetAutomation(ctx context.Context, id uuid.UUID) (Automation, error)

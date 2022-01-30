@@ -60,3 +60,12 @@ INSERT INTO automations (
 
 -- name: DeleteAutomation :exec
 DELETE FROM automations WHERE id = $1;
+
+-- name: DeleteAutomationEventsOld :exec
+DELETE FROM automation_events WHERE created_at < (now() - '7 days'::interval);
+
+-- name: DeleteAutomationEvents :exec
+DELETE FROM automation_events WHERE box_id = $1 AND status = $2;
+
+-- name: CountAutomationEvents :one
+SELECT count(*) from automation_events WHERE box_id = $1;

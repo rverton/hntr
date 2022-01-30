@@ -59,8 +59,12 @@ export default function AutomationShow() {
         mutate()
       })
       .catch(err => {
-        console.error(err);
-        alert('Error. Please try again later')
+        if (err?.response?.status === 400) {
+          alert('Could not start automation: Your automation log got too big, please clear some events first')
+        } else {
+          console.error(err);
+          alert('Error, please try again later')
+        }
       })
   }
 

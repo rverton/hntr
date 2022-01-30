@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/peterbourgon/ff/v3"
+	cron "github.com/robfig/cron/v3"
 )
 
 // build version, injected during build.
@@ -63,6 +65,20 @@ func main() {
 		log.Println(seedDb(repo))
 		os.Exit(0)
 	}
+
+	// cron tasks
+	c := cron.New()
+	_, err = c.AddFunc("@daily", func() {
+
+		// remove all automation events older than X days
+		if err := repo.DeleteAutomationEventsOld(context.Background()); err != nil {
+			log.Printf("error deleting old events: %v", err)
+		} else {
+			log.Printf("deleted old log events")
+		}
+
+	})
+	c.Start()
 
 	// start webserver
 	if err := server.Start(); err != nil {

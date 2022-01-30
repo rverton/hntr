@@ -9,6 +9,17 @@ import (
 	"github.com/google/uuid"
 )
 
+const countAutomationEvents = `-- name: CountAutomationEvents :one
+SELECT count(*) from automation_events WHERE box_id = $1
+`
+
+func (q *Queries) CountAutomationEvents(ctx context.Context, boxID uuid.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countAutomationEvents, boxID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createAutomation = `-- name: CreateAutomation :one
 INSERT INTO automations (
     name, description, box_id, command, source_container, source_tags, destination_container, destination_tags, is_public
@@ -99,6 +110,29 @@ DELETE FROM automations WHERE id = $1
 
 func (q *Queries) DeleteAutomation(ctx context.Context, id uuid.UUID) error {
 	_, err := q.db.Exec(ctx, deleteAutomation, id)
+	return err
+}
+
+const deleteAutomationEvents = `-- name: DeleteAutomationEvents :exec
+DELETE FROM automation_events WHERE box_id = $1 AND status = $2
+`
+
+type DeleteAutomationEventsParams struct {
+	BoxID  uuid.UUID `json:"box_id"`
+	Status string    `json:"status"`
+}
+
+func (q *Queries) DeleteAutomationEvents(ctx context.Context, arg DeleteAutomationEventsParams) error {
+	_, err := q.db.Exec(ctx, deleteAutomationEvents, arg.BoxID, arg.Status)
+	return err
+}
+
+const deleteAutomationEventsOld = `-- name: DeleteAutomationEventsOld :exec
+DELETE FROM automation_events WHERE created_at < (now() - '7 days'::interval)
+`
+
+func (q *Queries) DeleteAutomationEventsOld(ctx context.Context) error {
+	_, err := q.db.Exec(ctx, deleteAutomationEventsOld)
 	return err
 }
 

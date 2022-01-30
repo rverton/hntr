@@ -97,6 +97,28 @@ func (s *Server) ListAutomationEvents(c echo.Context) error {
 	return c.JSON(http.StatusOK, automationEvents)
 }
 
+func (s *Server) ClearAutomationEvents(c echo.Context) error {
+	ctx := context.Background()
+
+	id, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		log.Printf("unable to parse id: %v", err)
+		return c.JSON(http.StatusNotFound, nil)
+	}
+
+	status := c.QueryParam("status")
+
+	if err := s.repo.DeleteAutomationEvents(ctx, db.DeleteAutomationEventsParams{
+		BoxID:  id,
+		Status: status,
+	}); err != nil {
+		log.Printf("removing automation events failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	return c.JSON(http.StatusOK, nil)
+}
+
 func (s *Server) GetAutomationEventCounts(c echo.Context) error {
 	ctx := context.Background()
 
@@ -259,6 +281,19 @@ func (s *Server) StartAutomation(c echo.Context) error {
 
 		log.Printf("getting automation failed: %v", err)
 		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	// count automations to ensure automation log is not too big
+	count, err := s.repo.CountAutomationEvents(ctx, automation.BoxID)
+	if err != nil {
+		log.Printf("getting automation event count failed: %v", err)
+		return c.JSON(http.StatusInternalServerError, nil)
+	}
+
+	if count >= int64(s.recordsLimit*2) {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "You event log backlog is too big, please clear some events first",
+		})
 	}
 
 	// ensure box exists
