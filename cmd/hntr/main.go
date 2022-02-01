@@ -8,12 +8,17 @@ import (
 
 	"hntr/db"
 	"hntr/jobs"
+	"hntr/migrations"
 	"hntr/web"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/peterbourgon/ff/v3"
 	cron "github.com/robfig/cron/v3"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 )
 
 // build version, injected during build.
@@ -39,6 +44,7 @@ func main() {
 		bind         = fs.String("bind", ":8080", "bind to [ip]:port")
 		recordsLimit = fs.Int("insert-limit", 25000, "max. number of records")
 		seed         = fs.Bool("seed", false, "load seed data")
+		migrate      = fs.Bool("migrate", false, "run migrations")
 	)
 
 	// allow configuration to come from environment (which is loaded via .env file)
@@ -66,6 +72,13 @@ func main() {
 		os.Exit(0)
 	}
 
+	// migrate?
+	if *migrate {
+		log.Println("migrating database")
+		log.Println(migrateDb(*dbUrl))
+		os.Exit(0)
+	}
+
 	// cron tasks
 	c := cron.New()
 	_, err = c.AddFunc("@daily", func() {
@@ -84,4 +97,17 @@ func main() {
 	if err := server.Start(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func migrateDb(postgresUri string) error {
+	d, err := iofs.New(migrations.Files, ".")
+	if err != nil {
+		log.Fatal(err)
+	}
+	m, err := migrate.NewWithSourceInstance("iofs", d, postgresUri)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return m.Up()
 }
