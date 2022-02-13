@@ -13,12 +13,12 @@ Data is organized in **containers**, an each data point is called a **record**.
 Each box is only identified with a UUID. Share this URL to work with others
 together:
 
-`https://hntr.unlink.io/box/a822fd9e-9ec7-4d68-8e27-00f4259daeda`
+`https://hntr.unlink.io/records/?id=[exampleId]`
 
 To make this really simple to integrate into your toolchain, every container
 can be filled (and exported from) over HTTP. 
 
-`cat hostnames.txt | curl --data-binary @- "http://localhost:8080/api/box/a822fd9e-9ec7-4d68-8e27-00f4259daeda/hostnames"`
+`cat hostnames.txt | curl --data-binary @- "https://hntr.unlink.io/api/box/[exampleId]/hostnames"`
 
 Use the interface to search by tags (`tag:foobar`) or part of the record
 (`.foo.com`). You can select entries (hold the *Alt*-key while clicking) and
@@ -53,7 +53,7 @@ pipe some domains into your box. We will also add a tag `root_scope` to this
 entries to mark them as our initial root domains. This is done by adding a
 `tags` parameter.
 
-`cat domains.txt | curl --data-binary @- "https://hntr.unlink.io/api/box/f7a08ee9-6d28-4b3a-8364-526f77578003/hostnames?tags=root_scope"`
+`cat domains.txt | curl --data-binary @- "https://hntr.unlink.io/api/box/[exampleId]/hostnames?tags=root_scope"`
 
 After we have added this data, we can switch over to the **Automations** tab to
 create a simple workflow: For every record in our <HighlightWord>Hostnames</HighlightWord> container

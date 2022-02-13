@@ -1,4 +1,7 @@
 /hntr
+/hntr-linux
 .env
 hntr-worker.stderr.log
 resume.cfg
+
+dist/

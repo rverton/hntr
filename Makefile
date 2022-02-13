@@ -5,7 +5,7 @@ postgres=${POSTGRES_URL}
 
 .PHONY: frontend
 
-all: migrate frontend-install frontend build
+all: migrate frontend-install frontend build build-linux
 
 models:
 	sqlc generate
@@ -15,6 +15,9 @@ migrate:
 
 build:
 	go build -ldflags "-X main.commitHash=$$(git rev-parse --short HEAD) -X main.commitDate=$$(git log -1 --format=%ct)" -o . ./cmd/...
+
+build-linux:
+	GOOS=linux GOARCH=amd64 go build -ldflags "-X main.commitHash=$$(git rev-parse --short HEAD) -X main.commitDate=$$(git log -1 --format=%ct)" -o hntr-linux ./cmd/...
 
 run:
 	go run ./cmd/hntr/

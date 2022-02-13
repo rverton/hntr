@@ -34,3 +34,19 @@ Watch mode to run a watcher for the backend (`*.go`) and for the frontend (Next.
 For testing, a real postgres db is used, configured via `POSTGRES_TEST_*`.
 
     $ make test
+    
+## Deployment
+
+To deploy, first build a self-contained binary which holds the backend and the frontend app. Pass
+the full url of your backend as `NEXT_PUBLIC_API_URL`: 
+
+    $ NEXT_PUBLIC_API_URL=https://hntr.unlink.io/api make
+    
+Copy the generated `hntr` binary to your server, then migrate and run:
+
+    $ ./hntr -migrate
+    $ ./hntr -seed #optional
+    $ ./hntr
+    
+This will start the backend server which also serves the frontend.
+
