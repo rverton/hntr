@@ -1,5 +1,11 @@
 # hntr-go
 
+Collaborative workspaces for target/recon data. Create a box and start piping target data from your favourite tools with curl. Add tags, run automations on them and filter your results.
+
+hntr is a small but powerful tool to gather all information regarding targets. Data is organized in containers, an each data point is called a record.
+
+![](./frontend/public/screenshot.png)
+
 ## Configuration
 
 Example `.env` file
